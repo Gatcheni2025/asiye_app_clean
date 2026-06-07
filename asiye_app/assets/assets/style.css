@@ -1,0 +1,53 @@
+/* ===== Web Fonts ==== */
+   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+   @import url('https://fonts.googleapis.com/css2?family=Delicious+Handrawn&display=swap');
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+:root{
+    --bg-color: #ffffff;
+	--first_color: #ffffff;
+	--second-color: #444444;
+	--black-color: #000000;
+	--medium-dark: #444444;
+	--orange-color: #ffa500;
+	--blue-color: #0b7dda;
+	--icons-bg: #f4f4f4;
+}
+
+
+/* ===== NAVIGATION BAR ==== */
+
+/* ===== DESCRIPTION BOX ===== */
+
+
+/* ===== MODAL BOX ==== */
+
+
+/* ===== END OF NAVIGATION BAR ===== */
+
+/* ===== MAIN BOX ===== */
+
+/* ===== SOCIAL ICONS ===== */
+
+/* ===== Paused when the user hover on any icon ===== */
+
+
+/* ===== Hero Text ===== */
+
+/* ===== HERO IMAGE BOX ===== */
+
+
+/* ===== Responsive - Media Query: 1084px ===== */
+
+
+/* ===== Responsive - Media Query: 870px ===== */
+
+
+/* ===== Responsive - Media Query: 574px ===== */
+
+/* ===== Responsive - Media Query: 394px ===== */

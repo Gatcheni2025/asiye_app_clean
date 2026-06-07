@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Cancelled</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; margin: 0; }
+        .container { padding: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Payment Cancelled</h2>
+    <p>You have cancelled the transaction. Redirecting you back to the app...</p>
+</div>
+
+<script>
+    // After 2.5 seconds, redirect back to the main dashboard
+    setTimeout(function() {
+        window.location.href = 'index.html';
+    }, 2500);
+</script>
+</body>
+</html>

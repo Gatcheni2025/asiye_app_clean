@@ -1,0 +1,13 @@
+*.zip
+*.7z
+*.rar
+*.tar.gz
+*.apk
+*.ipa
+*.dSYM
+build/
+.dart_tool/
+android/build/
+ios/build/
+ios/Pods/
+node_modules/

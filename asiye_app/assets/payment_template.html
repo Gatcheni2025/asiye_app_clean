@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Payment - Asiye</title>
+    <style>
+        :root {
+            --primary-color: #007BFF;
+            --success-color: #28a745;
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background-gradient);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .payment-container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            margin: 30px auto;
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .payment-details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .payment-details p {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .payment-details p:last-child {
+            margin-bottom: 0;
+        }
+
+        .amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--success-color);
+        }
+
+        form {
+            display: none; /* Hidden form that auto-submits */
+        }
+    </style>
+</head>
+<body>
+<div class="payment-container">
+    <div class="logo">A</div>
+    <h1>Secure Payment</h1>
+    <p class="subtitle">We're redirecting you to PayFast to complete your payment securely.</p>
+
+    <div class="spinner"></div>
+
+    <div class="payment-details">
+        <p><span>Item:</span> <span>{{ITEM_NAME}}</span></p>
+        <p><span>Amount:</span> <span class="amount">R{{AMOUNT}}</span></p>
+    </div>
+
+    <div class="security-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Secured by PayFast
+    </div>
+
+    <form name="PayFastPayNowForm" action="https://payment.payfast.io/eng/process" method="post">
+        <input required type="hidden" name="cmd" value="_paynow">
+        <input required type="hidden" name="receiver" pattern="[0-9]" value="{{MERCHANT_ID}}">
+        <input type="hidden" name="return_url" value="{{RETURN_URL}}">
+        <input type="hidden" name="cancel_url" value="{{CANCEL_URL}}">
+        <input type="hidden" name="notify_url" value="{{NOTIFY_URL}}">
+        <input required type="hidden" name="amount" value="{{AMOUNT}}">
+        <input required type="hidden" name="item_name" maxlength="255" value="{{ITEM_NAME}}">
+        {{NAME_FIRST_FIELD}}
+        {{NAME_LAST_FIELD}}
+        {{EMAIL_FIELD}}
+        {{MPAYMENT_FIELD}}
+        <input type="image" src="https://my.payfast.io/images/buttons/PayNow/Primary-Large-PayNow.png"
+               alt="Pay Now" title="Pay Now with Payfast">
+    </form>
+</div>
+
+<script>
+    // Auto-submit the form
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            document.PayFastPayNowForm.submit();
+        }, 2000); // 2 second delay for better UX
+    });
+</script>
+</body>
+</html>

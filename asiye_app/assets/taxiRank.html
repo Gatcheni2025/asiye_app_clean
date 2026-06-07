@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Asiye | Rank Manager</title>
+
+    <!-- Icons & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <!-- Mapbox -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        :root {
+            --primary: #000000;
+            --accent: #4361ee;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-light: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --nav-height: 70px;
+            --radius: 20px;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 40px -5px rgba(0, 0, 0, 0.2);
+        }
+/* Drag and Drop Styles */
+.drag-handle {
+    padding: 10px;
+    color: #94a3b8;
+    cursor: grab;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.drag-handle:active {
+    cursor: grabbing;
+    color: var(--accent);
+}
+.sortable-ghost {
+    opacity: 0.4;
+    background: #f1f5f9;
+    border: 2px dashed var(--accent);
+}
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body, html { height: 100%; width: 100%; font-family: "Manrope", sans-serif; background: var(--bg-light); overflow: hidden; }
+
+        /* Login Screen */
+        #loginScreen {
+            position: fixed; inset: 0; background: linear-gradient(135deg, #1e293b, #000000);
+            z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; transition: opacity 0.4s ease;
+        }
+        .login-box {
+            background: white; padding: 40px 30px; border-radius: 24px; width: 100%; max-width: 400px;
+            box-shadow: var(--shadow-lg); animation: slideUp 0.5s ease-out; text-align: center;
+        }
+        .login-logo {
+            width: 80px; height: 80px; background: var(--accent); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; margin: 0 auto 20px; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        /* Map */
+        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        /* Floating Header */
+        .rank-header {
+            position: absolute; top: max(20px, env(safe-area-inset-top)); left: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px);
+            padding: 15px 20px; border-radius: 16px; box-shadow: var(--shadow);
+            z-index: 10; display: flex; align-items: center; justify-content: space-between;
+        }
+        .rank-info h1 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 2px; }
+        .rank-info p { font-size: 0.8rem; color: var(--text-sub); font-weight: 600; }
+        .rank-badge {
+            background: var(--accent); color: white; padding: 6px 12px;
+            border-radius: 20px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px;
+        }
+
+        /* Traffic Toggle */
+        .map-control {
+            position: absolute; top: calc(90px + env(safe-area-inset-top)); right: 20px; z-index: 10;
+            background: white; padding: 10px; border-radius: 50%;
+            box-shadow: var(--shadow); width: 45px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.2rem; color: var(--text-sub); transition: 0.3s;
+        }
+        .map-control.active { color: var(--accent); background: #eff6ff; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 500px; height: var(--nav-height);
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            border-radius: 24px; box-shadow: var(--shadow);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100; border: 1px solid rgba(0,0,0,0.05);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #94a3b8; cursor: pointer; transition: 0.3s; flex: 1; height: 100%;
+        }
+        .nav-item.active { color: var(--accent); }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 4px; }
+        .nav-item span { font-size: 0.65rem; font-weight: 700; }
+
+        /* FAB */
+        .fab-btn {
+            width: 55px; height: 55px; background: var(--accent); border-radius: 50%;
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.4);
+            transform: translateY(-25px); border: 4px solid var(--bg-light); cursor: pointer;
+        }
+
+        /* Sheets/Modals */
+        .sheet {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            background: var(--surface); z-index: 200;
+            border-radius: 24px 24px 0 0; padding: 20px; padding-top: 10px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+            transform: translateY(110%); transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+            height: 85vh; display: flex; flex-direction: column;
+        }
+        .sheet.open { transform: translateY(0); }
+        .sheet-drag-handle { width: 40px; height: 5px; background: #e2e8f0; border-radius: 5px; margin: 0 auto 15px; }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .sheet-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
+        .close-sheet { background: #f1f5f9; color: #64748b; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; transition: 0.2s; }
+        .close-sheet:hover { background: #e2e8f0; color: var(--text-main); }
+
+        .sheet-body { overflow-y: auto; padding-bottom: 30px; flex: 1; }
+
+        /* List Items */
+        .taxi-card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 12px 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;
+            position: relative; overflow: hidden; cursor: pointer; transition: 0.2s;
+        }
+        .taxi-card:active { transform: scale(0.98); }
+        .taxi-card.emergency { border: 2px solid var(--danger); background: #fef2f2; }
+
+        .taxi-img { width: 50px; height: 50px; border-radius: 12px; background: #f1f5f9; object-fit: cover; }
+        .taxi-info { flex: 1; }
+        .taxi-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+        .taxi-info p { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; display: flex; align-items: center; gap: 4px;}
+
+        .taxi-status { font-size: 0.7rem; font-weight: 800; padding: 6px 10px; border-radius: 8px; text-transform: uppercase; }
+        .status-loading { background: #eff6ff; color: var(--accent); }
+        .status-full { background: #fef3c7; color: var(--warning); }
+        .status-offline { background: #f1f5f9; color: var(--text-sub); }
+
+        /* Inputs & Buttons */
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px; color: var(--text-sub); }
+        .form-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; font-family: inherit; outline: none; background: #f8fafc; transition: 0.2s; }
+        .form-input:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1); }
+
+        .btn {
+            width: 100%; padding: 16px; border: none; border-radius: 14px;
+            font-weight: 800; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3); }
+        .btn-danger { background: var(--danger); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        .btn-outline { background: transparent; border: 2px solid #e2e8f0; color: var(--text-main); }
+        .btn-success { background: var(--success); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+
+        /* Overlays */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 150;
+            backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+
+        /* Chat Styles */
+        .chat-container { display: flex; flex-direction: column; height: 100%; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; border-radius: 16px; }
+        .chat-bubble { max-width: 80%; padding: 12px 16px; border-radius: 16px; font-size: 0.9rem; line-height: 1.4; position: relative; }
+        .chat-sent { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+        .chat-received { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: var(--text-main); border-bottom-left-radius: 4px; }
+        .chat-time { font-size: 0.65rem; opacity: 0.7; margin-top: 5px; text-align: right; display: block; }
+
+        .chat-input-wrapper { display: flex; gap: 10px; margin-top: 15px; }
+        .chat-input-wrapper input { margin-bottom: 0; flex: 1; }
+
+        /* Profile Section */
+        .profile-header { text-align: center; margin-bottom: 20px; }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--accent); color: white; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3); }
+
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #f8fafc; padding: 20px 15px; border-radius: 16px; text-align: center; border: 1px solid #e2e8f0; }
+        .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--accent); display: block; margin-bottom: 4px; }
+        .stat-label { font-size: 0.75rem; color: var(--text-sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* Queue Number Badge */
+        .queue-number {
+            width: 30px; height: 30px; background: var(--text-main); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
+        }
+
+        /* Marker Styles */
+        .taxi-marker { position: relative; display: flex; flex-direction: column; align-items: center; }
+        .taxi-marker-icon { width: 45px; height: 45px; background-size: contain; background-repeat: no-repeat; background-position: center; transition: 0.3s; }
+        .taxi-marker-status { width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; position: absolute; bottom: -2px; right: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .bg-loading { background: var(--accent); }
+        .bg-full { background: var(--warning); }
+
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Generic Toast */
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100%);
+            background: var(--text-main); color: white; padding: 12px 24px; border-radius: 30px;
+            font-size: 0.9rem; font-weight: 600; z-index: 999999; opacity: 0; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+<!-- Toast Notification -->
+<div id="toast"><i class="fas fa-info-circle"></i> <span id="toastMsg">Message</span></div>
+
+
+
+<!-- Map -->
+<div id="map"></div>
+
+<!-- Header -->
+<div class="rank-header">
+    <div class="rank-info">
+        <h1 id="rankNameDisplay">Loading...</h1>
+        <p><span id="onlineCount">0</span> Taxis Online &bull; <span id="queueCount">0</span> Loading</p>
+    </div>
+    <div class="rank-badge"><i class="fas fa-shield-alt"></i> MANAGER</div>
+</div>
+
+<!-- Traffic Toggle -->
+<div class="map-control" id="trafficBtn" onclick="toggleTraffic()">
+    <i class="fas fa-traffic-light"></i>
+</div>
+
+<!-- Overlay Backdrop -->
+<div class="overlay" id="overlay" onclick="closeAllSheets()"></div>
+
+<!-- 1. Queue Sheet -->
+<div id="queueSheet" class="sheet">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-header">
+        <div class="sheet-title">Current Loading Queue</div>
+        <button class="close-sheet" onclick="closeAllSheets()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sheet-body" id="queueList">
+        <p style="text-align:center; color:var(--text-sub); margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Loading queue...</p>
+    </div>
+</div>
+
+<!-- 2. Drivers List Sheet -->
+<div id="driversSheet" class="sheet">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-header">
+        <div class="sheet-title">My Fleet</div>
+        <button class="close-sheet" onclick="closeAllSheets()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="input-group">
+        <input type="text" class="form-input" placeholder="Search by name, reg, or destination..." onkeyup="filterDrivers(this.value)">
+    </div>
+    <div class="sheet-body" id="driversList">
+        <p style="text-align:center; color:var(--text-sub); margin-top:20px;"><i class="fas fa-spinner fa-spin"></i> Loading fleet...</p>
+    </div>
+</div>
+
+<!-- 3. Driver Profile Sheet (Sub-sheet) -->
+<div id="driverDetailSheet" class="sheet" style="z-index: 210;">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-header">
+        <div class="sheet-title">Driver Details</div>
+        <button class="close-sheet" onclick="closeDriverDetail()"><i class="fas fa-arrow-left"></i></button>
+    </div>
+    <div class="sheet-body">
+        <div class="profile-header">
+            <img src="" id="ddAvatarImg" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:10px; display:none; border: 3px solid var(--accent);">
+            <div class="profile-avatar" id="ddAvatarInitial">D</div>
+            <h2 id="ddName" style="font-weight: 800;">Driver Name</h2>
+            <p id="ddReg" style="color:var(--text-sub); font-weight: 600; font-size: 0.9rem; background: #e2e8f0; display: inline-block; padding: 4px 10px; border-radius: 6px; margin-top: 5px;">REG123</p>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <span class="stat-val" id="ddStatusVal" style="font-size: 1.2rem;">LOADING</span>
+                <span class="stat-label">Current Status</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" id="ddPax">0</span>
+                <span class="stat-label">Passengers</span>
+            </div>
+        </div>
+
+        <div class="input-group" style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
+            <label style="color: var(--accent);"><i class="fas fa-map-marker-alt"></i> Destination</label>
+            <p id="ddDest" style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);">Not set</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <button class="btn btn-outline" id="btnToggleFull" onclick="toggleDriverFull()">
+                Mark Full
+            </button>
+            <button class="btn btn-primary" onclick="openChatWithDriver()">
+                <i class="fas fa-comment-dots"></i> Message
+            </button>
+        </div>
+        <!-- Remove Driver Option (Admin feature, but good for Manager to detach from rank) -->
+        <button class="btn btn-danger" style="margin-top: 15px; background: #fef2f2; color: var(--danger); border: 1px solid #fecaca;" onclick="removeDriverFromRank()">
+            <i class="fas fa-unlink"></i> Remove from Rank
+        </button>
+    </div>
+</div>
+
+<!-- 4. Chat Sheet -->
+<div id="chatSheet" class="sheet" style="z-index: 220;">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-header">
+        <div class="sheet-title" id="chatTitle">Chat</div>
+        <button class="close-sheet" onclick="closeChatSheet()"><i class="fas fa-arrow-left"></i></button>
+    </div>
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages JS injected -->
+        </div>
+        <div class="chat-input-wrapper">
+            <input type="text" id="chatInput" class="form-input" placeholder="Type message...">
+            <button class="btn btn-primary" style="width: auto; padding: 0 20px; border-radius: 12px;" onclick="sendChatMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 5. Broadcast Sheet -->
+<div id="broadcastSheet" class="sheet">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-header">
+        <div class="sheet-title">Broadcast Message</div>
+        <button class="close-sheet" onclick="closeAllSheets()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sheet-body">
+        <div style="background: #eff6ff; padding: 15px; border-radius: 16px; margin-bottom: 20px;">
+            <p style="color: var(--accent); font-size: 0.85rem; font-weight: 600; margin: 0;">
+                <i class="fas fa-info-circle"></i> This message will be sent to all <b>Online</b> drivers currently assigned to your rank.
+            </p>
+        </div>
+        <textarea id="broadcastMsg" class="form-input" rows="5" placeholder="E.g., Heavy traffic on M1 South, use alternate routes..." style="margin-bottom: 20px; resize: none;"></textarea>
+        <button class="btn btn-primary" onclick="sendBroadcast()" id="btnBroadcast">
+            <i class="fas fa-bullhorn"></i> Send Broadcast
+        </button>
+    </div>
+</div>
+
+<!-- 6. Manager Profile Sheet -->
+<div id="profileSheet" class="sheet">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-header">
+        <div class="sheet-title">My Account</div>
+        <button class="close-sheet" onclick="closeAllSheets()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sheet-body">
+        <div class="profile-header">
+            <div class="profile-avatar" id="mgrInitial"><i class="fas fa-user-tie"></i></div>
+            <h2 id="mgrName">Manager Name</h2>
+            <p id="mgrEmail" style="color:var(--text-sub); font-size: 0.9rem; margin-top: 5px;">email@domain.com</p>
+        </div>
+
+        <div class="input-group" style="background: white; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px;">
+            <label style="color: var(--text-main); font-size: 0.9rem;">Assigned Rank</label>
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                <i class="fas fa-map-marker-alt" style="color: var(--accent); font-size: 1.2rem;"></i>
+                <span id="mgrRank" style="font-weight: 800; font-size: 1.1rem;">Rank Name</span>
+            </div>
+        </div>
+
+        <button class="btn btn-outline" style="margin-top: 20px; border-color: #fecaca; color: var(--danger); background: #fef2f2;" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </button>
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="showMap()">
+        <i class="fas fa-map-marked-alt"></i>
+        <span>Map</span>
+    </div>
+    <div class="nav-item" onclick="openSheet('queueSheet')">
+        <i class="fas fa-list-ol"></i>
+        <span>Queue</span>
+    </div>
+
+    <div class="fab-btn" onclick="openSheet('broadcastSheet')">
+        <i class="fas fa-bullhorn"></i>
+    </div>
+
+    <div class="nav-item" onclick="openSheet('driversSheet')">
+        <i class="fas fa-users"></i>
+        <span>Fleet</span>
+    </div>
+    <div class="nav-item" onclick="openSheet('profileSheet')">
+        <i class="fas fa-user-circle"></i>
+        <span>Profile</span>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script>
+    // --- FIREBASE CONFIG ---
+ const firebaseConfig = {
+        apiKey: "AIzaSyCX_euO2EEPhfhuG5DTsSi5vCpZ9MFZczY",
+        authDomain: "asiye-80386.firebaseapp.com",
+        databaseURL: "https://asiye-80386-default-rtdb.firebaseio.com",
+        projectId: "asiye-80386",
+        storageBucket: "asiye-80386.firebasestorage.app",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+    mapboxgl.accessToken = '__MAPBOX_PUBLIC_TOKEN__"DOMContentLoaded", () => {
+auth.onAuthStateChanged(user => {
+    if (user) {
+        verifyManagerRole(user.uid);
+    } else {
+        // User is not logged in, redirect to the main login page
+        window.location.replace('login.html');
+    }
+});
+});
+  function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.innerHTML = isError ? `<i class="fas fa-exclamation-circle" style="color:var(--danger)"></i> ${msg}` : `<i class="fas fa-check-circle" style="color:var(--success)"></i> ${msg}`;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+// --- FIX: LOGIN VIA PHONE + PIN ---
+function handleLogin() {
+const phoneInput = document.getElementById('loginPhone');
+const passInput = document.getElementById('loginPIN'); // Ensure ID matches your HTML
+const btn = document.getElementById('loginBtn');
+
+const phone = phoneInput.value.trim();
+const pass = passInput.value.trim();
+
+if (!phone || !pass) {
+    showToast("Please enter your Phone and PIN", true);
+    return;
+}
+
+// Convert phone to dummy email format used in Admin.html
+const cleanPhone = phone.replace(/\D/g, '');
+const dummyEmail = `${cleanPhone}@rank.asiye.cloud`;
+
+btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+btn.disabled = true;
+
+auth.signInWithEmailAndPassword(dummyEmail, pass)
+    .then((userCredential) => {
+        // Role verification happens in the Auth State Observer
+        document.getElementById('loginScreen').style.opacity = '0';
+        setTimeout(() => document.getElementById('loginScreen').style.display = 'none', 400);
+    })
+    .catch((err) => {
+        console.error(err);
+        showToast("Login Failed: Check Phone or PIN", true);
+        btn.innerHTML = 'Login <i class="fas fa-arrow-right"></i>';
+        btn.disabled = false;
+    });
+}
+
+// --- FIX: RANK VISIBILITY LOGIC ---
+function verifyManagerRole(uid) {
+db.ref(`rankManagers/${uid}`).once('value', snap => {
+    const data = snap.val();
+    if (data && data.userType === 'rank_manager') {
+        managerId = uid;
+        managerData = data;
+
+        // 1. Mark Manager as Online
+        db.ref(`rankManagers/${uid}`).update({ isOnline: true });
+
+         const rankRef = db.ref(`activeRanks/${uid}`);
+        rankRef.set({
+            name: managerData.rankName,
+            managerName: managerData.name,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+
+       rankRef.onDisconnect().remove();
+        db.ref(`rankManagers/${uid}/isOnline`).onDisconnect().set(false);
+
+        // Update UI
+        document.getElementById('rankNameDisplay').textContent = managerData.rankName;
+        document.getElementById('mgrName').textContent = managerData.name;
+        document.getElementById('mgrRank').textContent = managerData.rankName;
+
+        initMap();
+        listenToFleet();
+        showToast("Rank is now LIVE for drivers.");
+    } else {
+        showToast("Unauthorized Access", true);
+        auth.signOut().then(() => window.location.replace('login.html'));
+    }
+});
+}
+function logout() {
+        // --- NEW LOGIC: Announce that this rank is now INACTIVE ---
+        const encodedRankName = managerData.rankName.replace(/[^a-zA-Z0-9]/g, '_');
+        db.ref(`activeRanks/${encodedRankName}`).remove();
+        db.ref(`rankManagers/${managerId}`).update({ isOnline: false });
+        // ---------------------------------------------------------
+
+        auth.signOut().then(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace('login.html');
+        }).catch(err => {
+            showToast("Error logging out", true);
+        });
+    }
+
+    // --- MAP FUNCTIONS ---
+  function initMap() {
+        if(map) return;
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v11',
+            center: [28.0473, -26.2041],
+            zoom: 14,
+            attributionControl: false
+        });
+
+        // Watch Rank Manager's Live Location
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(pos => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+
+                if (!managerLocationMarker) {
+                    const el = document.createElement('div');
+                    el.innerHTML = `
+                        <div style="background:var(--accent); color:white; padding:6px 12px;
+                                    border-radius:20px; font-weight:800; font-size:12px;
+                                    border:2px solid white; box-shadow:var(--shadow);">
+                            <i class="fas fa-street-view"></i> You
+                        </div>`;
+
+                    managerLocationMarker = new mapboxgl.Marker(el)
+                        .setLngLat([lng, lat])
+                        .addTo(map);
+
+                    map.flyTo({ center: [lng, lat], zoom: 15 });
+                } else {
+                    managerLocationMarker.setLngLat([lng, lat]);
+                }
+            }, err => console.warn("Location error:", err), { enableHighAccuracy: true });
+        }
+    }
+
+          function toggleTraffic() {
+        trafficVisible = !trafficVisible;
+        document.getElementById('trafficBtn').classList.toggle('active', trafficVisible);
+        map.setStyle(trafficVisible ? 'mapbox://styles/mapbox/traffic-day-v2' : 'mapbox://styles/mapbox/light-v11');
+
+        // Re-plot markers once the new style loads to prevent glitches
+        map.once('style.load', () => {
+            Object.keys(activeDrivers).forEach(key => {
+                const taxi = activeDrivers[key];
+                const isMyRank = (taxi.assignedRank || taxi.loading_area || "").trim().toLowerCase() === managerData.rankName.trim().toLowerCase();
+                updateMarker(key, taxi, isMyRank);
+            });
+
+            // Redraw route if one was active
+            if(selectedDriverId && activeDrivers[selectedDriverId]) {
+                drawTaxiRoute(activeDrivers[selectedDriverId]);
+            }
+        });
+    }
+
+
+
+let sortableInstance = null;
+let isQueueDragging = false;
+
+// --- UPDATED FLEET LISTENER ---
+function listenToFleet() {
+if(!managerData || !managerData.rankName) return;
+const targetRank = managerData.rankName.trim().toLowerCase();
+
+db.ref('taxis').on('value', snap => {
+    const data = snap.val();
+    if (!data) return;
+
+    let onlineCount = 0;
+    const queueList = [];
+    activeDrivers = {};
+
+    document.getElementById('driversList').innerHTML = '';
+
+    // Only clear queue list if we are NOT currently dragging (prevents glitching while manager is holding a card)
+    if (!isQueueDragging) {
+        document.getElementById('queueList').innerHTML = '';
+    }
+
+    const currentKeys = new Set(Object.keys(data));
+
+    Object.keys(data).forEach(key => {
+        const taxi = data[key];
+        taxi.key = key;
+
+        const tRank = (taxi.assignedRank || taxi.loading_area || "").trim().toLowerCase();
+        const isMyRank = (tRank === targetRank);
+
+        if (taxi.isOnline) {
+            activeDrivers[key] = taxi;
+            updateMarker(key, taxi, isMyRank);
+        } else {
+            removeMarker(key);
+        }
+
+        if (isMyRank) {
+            if (taxi.isOnline) {
+                onlineCount++;
+                if (!taxi.isFull) queueList.push(taxi);
+            }
+            renderDriverCard(taxi);
+        }
+    });
+
+    Object.keys(markers).forEach(mKey => {
+        if (!currentKeys.has(mKey) || !data[mKey] || !data[mKey].isOnline) {
+            removeMarker(mKey);
+        }
+    });
+
+    document.getElementById('onlineCount').textContent = onlineCount;
+
+    // Custom Queue Sorting logic
+    // 1. Sort by custom queuePosition (assigned during drag/drop)
+    // 2. If no custom position, fallback to oldest lastSeen
+    queueList.sort((a, b) => {
+        let posA = a.queuePosition !== undefined ? a.queuePosition : Number.MAX_SAFE_INTEGER;
+        let posB = b.queuePosition !== undefined ? b.queuePosition : Number.MAX_SAFE_INTEGER;
+
+        if (posA !== posB) return posA - posB;
+        return (a.lastSeen || 0) - (b.lastSeen || 0);
+    });
+
+    renderQueue(queueList);
+});
+}
+
+function updateMarker(id, taxi, isMyRank) {
+        if (!taxi.latitude || !taxi.longitude) return;
+
+        let el;
+        if (markers[id]) {
+            el = markers[id].getElement();
+        } else {
+            el = document.createElement('div');
+            el.className = 'taxi-marker';
+
+            const icon = document.createElement('div');
+            icon.className = 'taxi-marker-icon';
+            icon.style.backgroundImage = 'url(data/newtaxi3.png)'; // Ensure you have this asset
+
+            // Visually dim taxis from other ranks
+            if (!isMyRank) icon.style.opacity = '0.4';
+
+            const statusDot = document.createElement('div');
+            statusDot.className = 'taxi-marker-status';
+            statusDot.id = `statusDot_${id}`;
+
+            el.appendChild(icon);
+            el.appendChild(statusDot);
+
+            el.addEventListener('click', () => {
+                if(isMyRank) openDriverDetail(id); // Only allow clicking own fleet
+            });
+
+            markers[id] = new mapboxgl.Marker(el)
+                .setLngLat([taxi.longitude, taxi.latitude])
+                .addTo(map);
+        }
+
+        const dot = el.querySelector(`#statusDot_${id}`);
+        if(dot) {
+            dot.className = `taxi-marker-status ${taxi.isFull ? 'bg-full' : 'bg-loading'}`;
+            if(!isMyRank) dot.style.background = '#cbd5e1'; // Grey out dot for other ranks
+        }
+
+        markers[id].setLngLat([taxi.longitude, taxi.latitude]);
+
+        // Live update line if moving
+        if (selectedDriverId === id && map.getSource(`route_${id}`)) drawTaxiRoute(taxi);
+    }
+
+     function removeMarker(id) {
+        if (markers[id]) {
+            markers[id].remove();
+            delete markers[id];
+        }
+        if (activeRouteId === `route_${id}`) removeTaxiRoute(id);
+    }
+
+async function drawTaxiRoute(taxi) {
+        if (!map || !taxi || !taxi.latitude || !taxi.longitude) return;
+
+        // Check common database key names for destination coordinates
+        const destLat = taxi.destinationLat || taxi.destLat || taxi.dest_lat || taxi.route_lat;
+        const destLng = taxi.destinationLng || taxi.destLng || taxi.dest_lng || taxi.route_lng;
+
+        if (!destLat || !destLng) {
+            console.log(`Driver ${taxi.name || taxi.key} has no destination GPS coordinates set yet.`);
+            return; // Fail silently, no annoying toast
+        }
+
+        const routeId = `route_${taxi.key}`;
+        activeRouteId = routeId;
+
+        try {
+            const response = await fetch(
+                `https://api.mapbox.com/directions/v5/mapbox/driving/${taxi.longitude},${taxi.latitude};${destLng},${destLat}?geometries=geojson&access_token=${mapboxgl.accessToken}`
+            );
+            const json = await response.json();
+
+            if (!json.routes || json.routes.length === 0) return;
+            const route = json.routes[0].geometry;
+
+            if (map.getSource(routeId)) {
+                map.getSource(routeId).setData(route);
+            } else {
+                map.addLayer({
+                    id: routeId,
+                    type: 'line',
+                    source: {
+                        type: 'geojson',
+                        data: { type: 'Feature', properties: {}, geometry: route }
+                    },
+                    layout: { 'line-join': 'round', 'line-cap': 'round' },
+                    paint: { 'line-color': 'var(--accent)', 'line-width': 6, 'line-opacity': 0.8 }
+                });
+            }
+        } catch (error) {
+            console.error("Error drawing route:", error);
+        }
+    }
+
+    // --- UI RENDERING ---
+   function renderDriverCard(taxi) {
+        const container = document.getElementById('driversList');
+        const statusClass = taxi.isFull ? 'status-full' : (taxi.isOnline ? 'status-loading' : 'status-offline');
+        const statusText = taxi.isFull ? 'FULL' : (taxi.isOnline ? 'LOADING' : 'OFFLINE');
+        const dest = taxi.destination ? taxi.destination.split(',')[0] : 'No destination';
+        const pic = taxi.profile_picture_url || 'https://ui-avatars.com/api/?background=e2e8f0&color=64748b&name=' + (taxi.name || 'D');
+
+        const card = `
+            <div class="taxi-card" onclick="openDriverDetail('${taxi.key}')">
+                <img src="${pic}" class="taxi-img">
+                <div class="taxi-info">
+                    <h4>${taxi.name || 'Driver'} ${taxi.surname || ''}</h4>
+                    <p><i class="fas fa-car" style="width:15px"></i> ${taxi.taxiRegistrationNumber || 'N/A'}</p>
+                    <p style="margin-top:2px"><i class="fas fa-route" style="width:15px"></i> ${dest}</p>
+                </div>
+                <div class="taxi-status ${statusClass}">${statusText}</div>
+            </div>
+        `;
+        container.innerHTML += card;
+    }
+
+
+     function renderQueue(list) {
+if (isQueueDragging) return; // Halt rendering if the manager is currently dragging an item
+
+const container = document.getElementById('queueList');
+document.getElementById('queueCount').textContent = list.length;
+
+if (list.length === 0) {
+    container.innerHTML = `
+        <div style="text-align:center; padding: 40px 20px; color: var(--text-sub);">
+            <i class="fas fa-coffee fa-3x" style="opacity:0.2; margin-bottom:15px;"></i>
+            <p>No taxis currently loading at this rank.</p>
+        </div>`;
+    return;
+}
+
+let html = '';
+list.forEach((taxi, index) => {
+    const dest = taxi.destination ? taxi.destination.split(',')[0] : 'Awaiting Destination';
+    const pic = taxi.profile_picture_url || 'https://ui-avatars.com/api/?background=e2e8f0&color=64748b&name=' + (taxi.name || 'D');
+    const waitTime = Math.max(1, Math.floor((Date.now() - (taxi.lastSeen || Date.now())) / 60000));
+
+    // Added drag-handle and data-id to the card
+    html += `
+        <div class="taxi-card" data-id="${taxi.key}" style="border-left: 4px solid var(--accent); padding-left: 5px;">
+            <div class="drag-handle"><i class="fas fa-grip-lines"></i></div>
+            <div class="queue-number" onclick="openDriverDetail('${taxi.key}')">${index + 1}</div>
+            <img src="${pic}" class="taxi-img" onclick="openDriverDetail('${taxi.key}')" style="cursor:pointer;">
+            <div class="taxi-info" onclick="openDriverDetail('${taxi.key}')" style="cursor:pointer;">
+                <h4>${taxi.name || 'Driver'}</h4>
+                <p style="color: var(--text-main); font-weight: 700; margin-top:2px;">To: ${dest}</p>
+            </div>
+            <div style="text-align:right;">
+                <span style="font-size:0.8rem; font-weight:800; color:var(--accent); display:block;">${waitTime}m</span>
+                <span style="font-size:0.6rem; color:var(--text-sub); text-transform:uppercase;">Wait</span>
+            </div>
+        </div>
+    `;
+});
+container.innerHTML = html;
+
+// Initialize/Re-initialize SortableJS for Drag and Drop
+if (sortableInstance) sortableInstance.destroy();
+
+sortableInstance = new Sortable(container, {
+    animation: 150,
+    handle: '.drag-handle', // Only drag when clicking the grip icon
+    ghostClass: 'sortable-ghost',
+    onStart: function () {
+        isQueueDragging = true;
+    },
+    onEnd: function () {
+        isQueueDragging = false;
+        saveQueueOrder(); // Save to database when dropped
+    }
+});
+}
+
+function saveQueueOrder() {
+const items = document.querySelectorAll('#queueList .taxi-card');
+const updates = {};
+
+// Loop through the new visual order and assign index numbers
+items.forEach((item, index) => {
+    const taxiId = item.getAttribute('data-id');
+    if (taxiId) {
+        updates[`taxis/${taxiId}/queuePosition`] = index + 1;
+
+        // Instantly update the visual number badge on the screen so it feels fast
+        const numberBadge = item.querySelector('.queue-number');
+        if (numberBadge) numberBadge.textContent = index + 1;
+    }
+});
+
+// Push the bulk updates to Firebase
+db.ref().update(updates).then(() => {
+    showToast("Queue reordered successfully!");
+}).catch(error => {
+    console.error("Queue Order Error: ", error);
+    showToast("Failed to save new queue order", true);
+});
+}
+  function filterDrivers(query) {
+        const list = document.getElementById('driversList');
+        const items = list.getElementsByClassName('taxi-card');
+        query = query.toLowerCase();
+
+        for (let i = 0; i < items.length; i++) {
+            const txt = items[i].innerText.toLowerCase();
+            items[i].style.display = txt.includes(query) ? "flex" : "none";
+        }
+    }
+
+    // --- DRIVER DETAILS ---
+      function openDriverDetail(id) {
+        const taxi = activeDrivers[id];
+        if (!taxi) return;
+
+        // Clear previous route if picking a new driver
+        if (selectedDriverId && selectedDriverId !== id) removeTaxiRoute(selectedDriverId);
+
+        selectedDriverId = id;
+
+        document.getElementById('ddName').textContent = `${taxi.name || 'Driver'} ${taxi.surname || ''}`;
+        document.getElementById('ddReg').textContent = taxi.taxiRegistrationNumber || 'No Reg';
+
+        if(taxi.profile_picture_url) {
+            document.getElementById('ddAvatarImg').src = taxi.profile_picture_url;
+            document.getElementById('ddAvatarImg').style.display = 'block';
+            document.getElementById('ddAvatarInitial').style.display = 'none';
+        } else {
+            document.getElementById('ddAvatarImg').style.display = 'none';
+            document.getElementById('ddAvatarInitial').style.display = 'flex';
+            document.getElementById('ddAvatarInitial').textContent = (taxi.name || 'D').charAt(0);
+        }
+
+        const statusVal = document.getElementById('ddStatusVal');
+        if(taxi.isFull) {
+            statusVal.textContent = "FULL";
+            statusVal.style.color = "var(--warning)";
+        } else if (taxi.isOnline) {
+            statusVal.textContent = "LOADING";
+            statusVal.style.color = "var(--accent)";
+        } else {
+            statusVal.textContent = "OFFLINE";
+            statusVal.style.color = "var(--text-sub)";
+        }
+
+        document.getElementById('ddDest').textContent = taxi.destination || "Not set by driver";
+
+        db.ref('requests').orderByChild('taxiId').equalTo(id).once('value', snap => {
+            let pax = 0;
+            if(snap.exists()) {
+                snap.forEach(r => {
+                    if(['accepted', 'passenger_here', 'passenger_onboard'].includes(r.val().status)) pax++;
+                });
+            }
+            document.getElementById('ddPax').textContent = pax;
+        });
+
+        const btnToggle = document.getElementById('btnToggleFull');
+        if(!taxi.isOnline) {
+            btnToggle.style.display = 'none';
+        } else {
+            btnToggle.style.display = 'flex';
+            btnToggle.innerHTML = taxi.isFull ? '<i class="fas fa-users"></i> Set Loading' : '<i class="fas fa-check-double"></i> Set Full';
+            btnToggle.style.borderColor = taxi.isFull ? 'var(--accent)' : 'var(--warning)';
+            btnToggle.style.color = taxi.isFull ? 'var(--accent)' : 'var(--warning)';
+        }
+
+        // Draw route on map
+        drawTaxiRoute(taxi);
+
+        openSheet('driverDetailSheet');
+
+        if(taxi.latitude) {
+            map.flyTo({ center: [taxi.longitude, taxi.latitude], zoom: 15 });
+        }
+    }
+
+
+    function toggleDriverFull() {
+        if (!selectedDriverId) return;
+        const taxi = activeDrivers[selectedDriverId];
+        const newStatus = !taxi.isFull;
+
+        db.ref(`taxis/${selectedDriverId}`).update({
+            isFull: newStatus,
+            lastSeen: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            showToast(`Driver marked as ${newStatus ? 'FULL' : 'LOADING'}`);
+            closeDriverDetail();
+        }).catch(e => showToast("Error updating driver", true));
+    }
+function removeDriverFromRank() {
+        if(!confirm("Remove this driver from your rank? They will no longer appear in your fleet until they re-assign themselves.")) return;
+
+        db.ref(`taxis/${selectedDriverId}`).update({
+            assignedRank: null,
+            loading_area: null
+        }).then(() => {
+            showToast("Driver removed from fleet.");
+            closeAllSheets();
+        });
+    }
+function removeTaxiRoute(taxiId) {
+        if (!map) return;
+        const routeId = `route_${taxiId}`;
+        if (map.getLayer(routeId)) map.removeLayer(routeId);
+        if (map.getSource(routeId)) map.removeSource(routeId);
+    }
+    // --- BROADCAST ---
+   function sendBroadcast() {
+        const msg = document.getElementById('broadcastMsg').value.trim();
+        if (!msg) return showToast("Message cannot be empty", true);
+
+        const onlineDriverIds = Object.keys(activeDrivers).filter(k =>
+            activeDrivers[k].isOnline &&
+            (activeDrivers[k].assignedRank || activeDrivers[k].loading_area || "").trim().toLowerCase() === managerData.rankName.trim().toLowerCase()
+        );
+
+        if (onlineDriverIds.length === 0) return showToast("No online drivers to message.", true);
+
+        const btn = document.getElementById('btnBroadcast');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        btn.disabled = true;
+
+        const timestamp = firebase.database.ServerValue.TIMESTAMP;
+        const promises = onlineDriverIds.map(id => {
+            return db.ref(`notifications/taxis/${id}`).push({
+                type: 'rank_broadcast',
+                title: 'Rank Manager Broadcast',
+                message: msg,
+                senderId: managerId,
+                senderName: managerData.name,
+                timestamp: timestamp
+            });
+        });
+
+        Promise.all(promises).then(() => {
+            document.getElementById('broadcastMsg').value = '';
+            showToast(`Sent to ${onlineDriverIds.length} drivers.`);
+            closeAllSheets();
+        }).finally(() => {
+            btn.innerHTML = '<i class="fas fa-bullhorn"></i> Send Broadcast';
+            btn.disabled = false;
+        });
+    }
+
+    // --- CHAT SYSTEM ---
+  function openChatWithDriver() {
+        if(!selectedDriverId) return;
+        const driverName = activeDrivers[selectedDriverId].name || "Driver";
+        document.getElementById('chatTitle').textContent = `Chat: ${driverName}`;
+
+        openSheet('chatSheet');
+        loadChatMessages(selectedDriverId);
+    }
+
+           function loadChatMessages(driverId) {
+        const chatId = [managerId, driverId].sort().join('_');
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = '<p style="text-align:center; color:#94a3b8; margin-top:20px;">Loading messages...</p>';
+
+        if(activeChatRef) activeChatRef.off();
+
+        activeChatRef = db.ref(`chats/${chatId}/messages`);
+
+        activeChatRef.once('value', snap => {
+            container.innerHTML = '';
+            if(!snap.exists()) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8; margin-top:20px;">No messages yet. Send the first one!</p>';
+            }
+        });
+
+        activeChatRef.on('child_added', snap => {
+            const msg = snap.val();
+            const isMe = msg.senderId === managerId;
+
+            if(container.innerHTML.includes('No messages yet')) container.innerHTML = '';
+
+            const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            const div = document.createElement('div');
+            div.className = `chat-bubble ${isMe ? 'chat-sent' : 'chat-received'}`;
+            div.innerHTML = `
+                ${msg.message}
+                <span class="chat-time">${time}</span>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        });
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if(!text || !selectedDriverId) return;
+
+        const chatId = [managerId, selectedDriverId].sort().join('_');
+        const timestamp = firebase.database.ServerValue.TIMESTAMP;
+
+        // Push to chat history
+        db.ref(`chats/${chatId}/messages`).push({
+            senderId: managerId,
+            senderName: managerData.name || "Rank Manager",
+            message: text,
+            timestamp: timestamp,
+            userType: 'rank_manager'
+        });
+
+        // Send notification to driver
+        db.ref(`notifications/taxis/${selectedDriverId}`).push({
+            type: 'chat_message',
+            senderId: managerId,
+            senderName: managerData.name || "Rank Manager",
+            message: text,
+            timestamp: timestamp,
+            chatId: chatId
+        });
+
+        input.value = '';
+        input.focus();
+    }
+
+    function closeChatSheet() {
+        if(activeChatRef) activeChatRef.off();
+        document.getElementById('chatSheet').classList.remove('open');
+        // We go back to driver detail sheet, so keep overlay active
+    }
+
+    // --- SHEET MANAGEMENT ---
+    function openSheet(id) {
+        if(id !== 'chatSheet') closeAllSheets(); // Chat stacks on top of driver detail
+        document.getElementById(id).classList.add('open');
+        document.getElementById('overlay').classList.add('active');
+
+        // Update active nav icon
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if(id === 'queueSheet') document.querySelectorAll('.nav-item')[1].classList.add('active');
+        if(id === 'driversSheet') document.querySelectorAll('.nav-item')[2].classList.add('active');
+        if(id === 'profileSheet') document.querySelectorAll('.nav-item')[3].classList.add('active');
+    }
+
+    function closeAllSheets() {
+        document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
+        document.getElementById('overlay').classList.remove('active');
+        if(activeChatRef) activeChatRef.off();
+    }
+
+  function closeDriverDetail() {
+if(selectedDriverId) {
+    removeTaxiRoute(selectedDriverId);
+    selectedDriverId = null;
+    activeRouteId = null;
+}
+
+document.getElementById('driverDetailSheet').classList.remove('open');
+document.getElementById('chatSheet').classList.remove('open');
+if(activeChatRef) activeChatRef.off();
+
+if(!document.querySelector('.sheet.open:not(#driverDetailSheet):not(#chatSheet)')) {
+    document.getElementById('overlay').classList.remove('active');
+}
+}
+
+        function showMap() {
+        closeAllSheets();
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelector('.nav-item:first-child').classList.add('active');
+
+        if (managerLocationMarker && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 15 });
+            });
+        }
+    }
+
+    function verifyManagerRole(uid) {
+db.ref(`rankManagers/${uid}`).once('value', snap => {
+    const data = snap.val();
+    if(data && data.userType === 'rank_manager') {
+        managerId = uid;
+        managerData = data;
+
+        // Populate Manager Profile Data
+        document.getElementById('rankNameDisplay').textContent = managerData.rankName;
+        document.getElementById('mgrName').textContent = managerData.name;
+        document.getElementById('mgrEmail').textContent = managerData.email || managerData.phone;
+        document.getElementById('mgrRank').textContent = managerData.rankName;
+        document.getElementById('mgrInitial').innerHTML = managerData.name.charAt(0).toUpperCase();
+
+        // Start the dashboard
+        initMap();
+        listenToFleet();
+        showToast("Welcome back, " + managerData.name.split(' ')[0]);
+    } else {
+        // If they aren't a rank manager, sign them out and kick them back to login
+        auth.signOut().then(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace('login.html');
+        });
+    }
+});
+}
+</script>
+</body>
+</html>

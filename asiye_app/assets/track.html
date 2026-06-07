@@ -1,0 +1,203 @@
+<!-- track.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Asiye | Live Tracking</title>
+
+    <!-- Mapbox & Fonts -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Manrope', sans-serif; overflow: hidden; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
+        .tracking-card {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .driver-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #007BFF;
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .trip-info h2 { margin: 0; font-size: 1.1rem; color: #333; }
+        .trip-info p { margin: 5px 0 0; color: #666; font-size: 0.9rem; }
+
+        .status-badge {
+            position: absolute;
+            top: -15px;
+            right: 15px;
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .taxi-marker {
+            width: 50px;
+            height: 50px;
+            background-image: url('data/quantum.png'); /* Ensure this path is correct relative to track.html */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+            transition: transform 1s linear;
+        }
+
+        /* Loading Overlay */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #f8f9fa; z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loader">
+    <h3>Connecting to live trip...</h3>
+</div>
+
+<div id="map"></div>
+
+<div id="infoCard" class="tracking-card" style="display:none;">
+    <div class="status-badge" id="statusBadge">LIVE</div>
+    <img id="driverPic" src="" class="driver-img" onerror="this.src='data/logo.png'">
+    <div class="trip-info">
+        <h2 id="driverName">Driver</h2>
+        <p><i class="fas fa-car"></i> <span id="taxiReg">...</span></p>
+        <p style="color: #007BFF; font-weight:bold; margin-top:2px;">
+            <i class="fas fa-map-marker-alt"></i> Going to: <span id="destination">...</span>
+        </p>
+    </div>
+</div>
+
+<script>
+    // 1. Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyCX_euO2EEPhfhuG5DTsSi5vCpZ9MFZczY",
+        authDomain: "asiye-80386.firebaseapp.com",
+        databaseURL: "https://asiye-80386-default-rtdb.firebaseio.com",
+        projectId: "asiye-80386",
+        storageBucket: "asiye-80386.firebasestorage.app",
+        appId: "1:531902350858:web:f8a4a246bf350d50e3c1f3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    mapboxgl.accessToken = '__MAPBOX_PUBLIC_TOKEN__"<h3>Invalid Tracking Link</h3>";
+    } else {
+        initMap();
+    }
+
+    function initMap() {
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11', // or navigation-day-v1
+            center: [28.0473, -26.2041], // Default JHB
+            zoom: 13
+        });
+
+        map.on('load', () => {
+            startTracking();
+        });
+    }
+
+    function startTracking() {
+        const requestRef = database.ref('requests/' + tripId);
+
+        requestRef.on('value', (snapshot) => {
+            const trip = snapshot.val();
+
+            if (!trip) {
+                document.getElementById('loader').innerHTML = "<h3>Trip Ended or Not Found</h3>";
+                return;
+            }
+
+            // If trip completed/cancelled
+            if (['completed', 'cancelled_by_driver', 'cancelled_by_commuter', 'rejected'].includes(trip.status)) {
+                document.getElementById('statusBadge').innerText = "TRIP ENDED";
+                document.getElementById('statusBadge').style.background = "#666";
+                // Don't return immediately, allow user to see last state
+            }
+
+            // Get Taxi Details
+            if (trip.taxiId) {
+                trackTaxi(trip.taxiId, trip);
+            }
+        });
+    }
+
+    function trackTaxi(taxiId, tripData) {
+        database.ref('taxis/' + taxiId).on('value', (snap) => {
+            const taxi = snap.val();
+            if (taxi) {
+                updateUI(taxi, tripData);
+                updateMap(taxi);
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('infoCard').style.display = 'flex';
+            }
+        });
+    }
+
+    function updateUI(taxi, trip) {
+        document.getElementById('driverName').innerText = `${taxi.name || ''} ${taxi.surname || 'Driver'}`;
+        document.getElementById('taxiReg').innerText = taxi.taxiRegistrationNumber || taxi.registration || "Taxi";
+
+        // Format Destination
+        const dest = trip.destination ? trip.destination.split(',')[0] : "Destination";
+        document.getElementById('destination').innerText = dest;
+
+        if (taxi.profile_picture_url) {
+            document.getElementById('driverPic').src = taxi.profile_picture_url;
+        }
+    }
+
+    function updateMap(taxi) {
+        const coords = [taxi.longitude, taxi.latitude];
+
+        if (!taxiMarker) {
+            const el = document.createElement('div');
+            el.className = 'taxi-marker';
+            taxiMarker = new mapboxgl.Marker({ element: el })
+                .setLngLat(coords)
+                .addTo(map);
+
+            // First load zoom
+            map.flyTo({ center: coords, zoom: 16 });
+        } else {
+            taxiMarker.setLngLat(coords);
+            map.easeTo({ center: coords }); // Smooth follow
+        }
+    }
+</script>
+</body>
+</html>

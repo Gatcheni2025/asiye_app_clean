@@ -1,0 +1,8 @@
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/data/AsiyeNew.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/data/AsiyeNew.png"
+  # Ensures the icon is not zoomed and is properly padded for adaptive icons
+  adaptive_icon_foreground_inset: 16

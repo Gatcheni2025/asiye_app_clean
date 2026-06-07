@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Asiye | Partner Signup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #7b9cff;
+            --primary-dark: #5a7be0;
+            --text-main: #ffffff;
+            --text-muted: #8a8a8e;
+            --input-bg: #1c1c1e;
+            --bg-color: #0d0d0d;
+            --error-red: #ff453a;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: "Manrope", sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .container::-webkit-scrollbar { display: none; }
+
+        .header-section {
+            margin-bottom: 24px;
+            padding-top: 20px;
+            flex-shrink: 0;
+        }
+
+       .logo {
+    width: 74px;
+    height: 74px;
+    border-radius: 24px;
+    object-fit: cover;
+    overflow: hidden;
+    background: linear-gradient(135deg, #7b9cff, #5a7be0);
+    padding: 3px;
+    box-shadow:
+        0 10px 30px rgba(91,123,224,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .form-section {
+            flex-grow: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-wrapper {
+            margin-bottom: 16px;
+            text-align: left;
+            position: relative;
+        }
+
+        .phone-container { display: flex; gap: 10px; }
+
+        .country-code-box {
+            background: var(--input-bg);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-main);
+            width: 80px;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .country-flag { width: 20px; margin-right: 5px; }
+
+        .modern-input {
+            background: var(--input-bg);
+            border-radius: 12px;
+            border: 1.5px solid #333;
+            padding: 16px;
+            font-size: 0.95rem;
+            font-family: "Manrope", sans-serif;
+            font-weight: 600;
+            color: var(--text-main);
+            width: 100%;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .modern-input:focus {
+            background: #2c2c2e;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        .modern-input.error {
+            border-color: var(--error-red);
+        }
+
+        select.modern-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+        }
+
+        .split-row { display: flex; gap: 10px; }
+        .split-input { flex: 1; }
+
+        .main-btn {
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            margin-top: 8px;
+        }
+        .main-btn:active { transform: scale(0.98); }
+        .main-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .action-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid #333;
+            border-radius: 30px;
+            padding: 14px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        .action-btn:hover { background: #1a1a1a; }
+        .action-btn i { font-size: 1rem; }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 16px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #444;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
+        .divider::before { margin-right: 12px; } .divider::after { margin-left: 12px; }
+
+        .terms-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin: 20px 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: left;
+            background: #1c1c1e;
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .terms-box input {
+            margin-top: 3px;
+            accent-color: #ffffff;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .terms-box a {
+            color: #ffffff;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .error-message {
+            color: var(--error-red);
+            background: rgba(255, 69, 58, 0.1);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            display: none;
+            text-align: center;
+        }
+
+        .spinner { border: 2px solid rgba(0,0,0,0.2); border-left-color: #000; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #successOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color); z-index: 99999;
+            display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .success-circle { width: 80px; height: 80px; background: #32d74b; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; animation: popIn 0.5s; }
+        .success-circle i { color: white; font-size: 36px; }
+
+        #tosOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 100000; padding: 24px;
+        }
+        .tos-card { background: #1c1c1e; width: 100%; max-width: 450px; max-height: 80vh; overflow-y: auto; border-radius: 24px; padding: 30px; position: relative; border: 1px solid #333; }
+        .close-tos { position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: var(--text-muted); }
+        .tos-card h2 { margin-bottom: 20px; color: #fff; font-size: 1.4rem; }
+        .tos-card p { margin-bottom: 16px; color: #a1a1a6; line-height: 1.6; font-size: 0.95rem; }
+
+        .suggestions-box {
+            position: absolute; width: 100%; background: #1c1c1e; z-index: 1000;
+            border: 1px solid #333; border-radius: 12px; max-height: 200px;
+            overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            top: 100%; left: 0; margin-top: 8px; display: none;
+        }
+        .suggestion-item { padding: 14px 16px; cursor: pointer; border-bottom: 1px solid #2c2c2e; font-size: 0.9rem; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: #2c2c2e; }
+
+        @media (max-height: 700px) {
+            .header-section { margin-bottom: 12px; }
+            .logo { width: 50px; height: 50px; }
+            .modern-input { padding: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section" id="logoSection">
+        <img src="data/AsiyeNew.png" alt="Asiye Logo" class="logo">
+        <h1 id="headerTitle">Join Asiye</h1>
+        <p class="subtitle" id="headerSubtitle">Register as a Driver or Handler</p>
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+
+    <div class="form-section">
+        <!-- GATEWAY -->
+        <div id="mainGateway">
+            <button id="google-btn" class="action-btn">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" width="18">
+                Sign up with Google
+            </button>
+            <button id="apple-btn" class="action-btn">
+                <i class="fab fa-apple"></i>
+                Sign up with Apple
+            </button>
+            <div class="divider">OR</div>
+            <button class="action-btn" onclick="showStep1('email')">
+                <i class="fas fa-envelope"></i> Sign up with Email
+            </button>
+            <button class="action-btn" onclick="showStep1('phone')">
+                <i class="fas fa-phone-alt"></i> Sign up with Phone
+            </button>
+
+            <div style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+                By continuing, you agree to our <a href="javascript:void(0)" onclick="showTOS('terms')" style="color: #fff; text-decoration: none; font-weight: 600;">Terms</a> & <a href="javascript:void(0)" onclick="showTOS('privacy')" style="color: #fff; text-decoration: none; font-weight: 600;">Privacy</a>.
+            </div>
+            <div style="margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+                Already have an account? <a href="login.html" style="color: #fff; font-weight: 700; text-decoration: none;">Sign In</a>
+            </div>
+        </div>
+
+        <form id="signup-form" onsubmit="return false;">
+            <!-- STEP 1 -->
+            <div id="step-1" style="display: none;">
+                <div id="emailWrapper" class="input-wrapper" style="display: none;">
+                    <input type="email" id="emailInput" class="modern-input" placeholder="name@example.com" autocomplete="email">
+                </div>
+                <div id="phoneWrapper" class="input-wrapper" style="display: none;">
+                    <div class="phone-container">
+                        <div class="country-code-box">
+                            <img src="https://flagcdn.com/w40/za.png" class="country-flag" alt="ZA"> +27
+                        </div>
+                        <input type="tel" id="phoneInput" class="modern-input" placeholder="e.g. 72 123 4567" autocomplete="tel">
+                    </div>
+                </div>
+                <button id="nextStepBtn" class="main-btn">Continue</button>
+                <div class="back-link" onclick="showGateway()"><i class="fas fa-arrow-left"></i> Back</div>
+            </div>
+
+            <!-- STEP 2 -->
+            <div id="step-2" style="display: none;">
+                <div class="input-wrapper" id="otpWrapper" style="display: none;">
+                    <input type="number" id="otpInput" class="modern-input" placeholder="Enter 6-digit SMS code">
+                </div>
+
+                <div class="input-wrapper split-row" id="nameSurnameGroup">
+                    <div class="split-input">
+                        <input type="text" id="nameInput" class="modern-input" placeholder="First Name" autocomplete="given-name">
+                    </div>
+                    <div class="split-input">
+                        <input type="text" id="surnameInput" class="modern-input" placeholder="Surname" autocomplete="family-name">
+                    </div>
+                </div>
+
+                <div class="input-wrapper" id="passwordWrapper">
+                    <input type="password" id="passwordInput" class="modern-input" placeholder="Create Password" autocomplete="new-password">
+                </div>
+                <div class="input-wrapper" id="confirmPasswordWrapper">
+                    <input type="password" id="confirmPasswordInput" class="modern-input" placeholder="Confirm Password" autocomplete="new-password">
+                </div>
+
+                <div class="input-wrapper">
+                    <select id="accountTypeInput" class="modern-input" onchange="handleAccountTypeChange()">
+                        <option value="" disabled selected>Select Account Type</option>
+                        <option value="ehailing">Asiye Go Driver (e-Hailing)</option>
+                        <option value="handler">Handler Account (Courier)</option>
+                    </select>
+                </div>
+
+                <!-- VEHICLE FIELDS (Drivers Only) -->
+                <div id="vehicleFieldsWrapper" style="display:none; width: 100%;">
+                    <div class="input-wrapper split-row">
+                        <div class="split-input">
+                            <input type="text" id="vehicleMakeInput" class="modern-input" placeholder="Make (e.g. Toyota)">
+                        </div>
+                        <div class="split-input">
+                            <input type="text" id="vehicleModelInput" class="modern-input" placeholder="Model (e.g. Etios)">
+                        </div>
+                    </div>
+                    <div class="input-wrapper split-row">
+                        <div class="split-input">
+                            <input type="number" id="vehicleYearInput" class="modern-input" placeholder="Year" min="2000" max="2026">
+                        </div>
+                        <div class="split-input">
+                            <input type="text" id="vehicleColorInput" class="modern-input" placeholder="Color">
+                        </div>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" id="licenseInput" class="modern-input" placeholder="Driver's License Number">
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" id="taxiRegInput" class="modern-input" placeholder="Vehicle Registration">
+                    </div>
+                </div>
+
+                <!-- HANDLER FIELDS -->
+                <div id="handlerFieldsWrapper" style="display:none; width: 100%;">
+                    <div class="input-wrapper">
+                        <input type="text" id="idNumberInput" class="modern-input" placeholder="ID Number (13 Digits)" maxlength="13">
+                    </div>
+                    <div class="input-wrapper split-row">
+                        <div class="split-input">
+                            <input type="text" id="ref1NameInput" class="modern-input" placeholder="Ref 1 Name">
+                        </div>
+                        <div class="split-input">
+                            <input type="tel" id="ref1PhoneInput" class="modern-input" placeholder="Ref 1 Phone">
+                        </div>
+                    </div>
+                    <div class="input-wrapper split-row">
+                        <div class="split-input">
+                            <input type="text" id="ref2NameInput" class="modern-input" placeholder="Ref 2 Name">
+                        </div>
+                        <div class="split-input">
+                            <input type="tel" id="ref2PhoneInput" class="modern-input" placeholder="Ref 2 Phone">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-wrapper" style="position: relative;">
+                    <input type="text" id="operatingCityInput" class="modern-input" placeholder="Operating City / Area" autocomplete="off">
+                    <div id="citySuggestions" class="suggestions-box"></div>
+                </div>
+
+                <div class="terms-box">
+                    <input type="checkbox" id="termsCheck">
+                    <label for="termsCheck">
+                        I agree to the
+                        <a href="javascript:void(0)" onclick="showTOS('terms')">Terms of Service</a>
+                        and
+                        <a href="javascript:void(0)" onclick="showTOS('privacy')">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button id="finalSubmitBtn" class="main-btn">Create Partner Account</button>
+                <div class="back-link" onclick="goBackToStep1()"><i class="fas fa-arrow-left"></i> Back</div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="recaptcha-container"></div>
+
+<div id="tosOverlay">
+    <div class="tos-card">
+        <div class="close-tos" onclick="document.getElementById('tosOverlay').style.display='none'">&times;</div>
+        <h2 id="tosTitle"></h2>
+        <div id="tosContent"></div>
+        <button class="main-btn" onclick="document.getElementById('termsCheck').checked=true; document.getElementById('tosOverlay').style.display='none';">
+            Accept & Continue
+        </button>
+    </div>
+</div>
+
+<div id="successOverlay">
+    <div class="success-circle"><i class="fas fa-check"></i></div>
+    <h2 style="font-weight: 800; color: #fff; margin-bottom: 8px;">Success!</h2>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Setting up your partner profile...</p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    (function() {
+        if (window.location.search.includes('state=') || window.location.search.includes('code=')) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    })();
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCX_euO2EEPhfhuG5DTsSi5vCpZ9MFZczY",
+        authDomain: "asiye-80386.firebaseapp.com",
+        databaseURL: "https://asiye-80386-default-rtdb.firebaseio.com",
+        projectId: "asiye-80386",
+        storageBucket: "asiye-80386.firebasestorage.app",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+    let currentMode = 'none';
+    let socialUser = null;
+    let confirmationResult = null;
+    let isSubmitting = false;
+
+    const errorMessage = document.getElementById('errorMessage');
+    const headerTitle = document.getElementById('headerTitle');
+    const headerSubtitle = document.getElementById('headerSubtitle');
+
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
+
+    async function sha256(msg) {
+        if(!msg) return "";
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function showTOS(type){
+        document.getElementById('tosOverlay').style.display = 'flex';
+        const title = document.getElementById('tosTitle');
+        const content = document.getElementById('tosContent');
+        if(type === 'terms'){
+            title.innerText = "Terms of Service";
+            content.innerHTML = `<p><strong>1. Services:</strong> Asiye connects commuters with taxi and parcel providers.</p><p><strong>2. Partner Responsibility:</strong> Partners must provide accurate vehicle and ID information.</p><p><strong>3. Compliance:</strong> All partners must comply with local transportation regulations.</p>`;
+        } else {
+            title.innerText = "Privacy Policy";
+            content.innerHTML = `<p><strong>1. Data Usage:</strong> We collect ID, location and vehicle data for safety and matching.</p><p><strong>2. POPIA:</strong> We adhere to South African privacy standards.</p><p><strong>3. Control:</strong> You can request account deletion in settings.</p>`;
+        }
+    }
+
+    function showGateway() {
+        document.getElementById('mainGateway').style.display = 'block';
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-2').style.display = 'none';
+        headerTitle.textContent = "Join Asiye";
+        headerSubtitle.textContent = "Register as a Driver or Handler";
+        errorMessage.style.display = 'none';
+    }
+
+    function showStep1(mode) {
+        currentMode = mode;
+        document.getElementById('mainGateway').style.display = 'none';
+        document.getElementById('step-1').style.display = 'block';
+        if (mode === 'email') {
+            document.getElementById('emailWrapper').style.display = 'block';
+            document.getElementById('phoneWrapper').style.display = 'none';
+            headerTitle.textContent = "Email Signup";
+            document.getElementById('emailInput').focus();
+        } else {
+            document.getElementById('phoneWrapper').style.display = 'block';
+            document.getElementById('emailWrapper').style.display = 'none';
+            headerTitle.textContent = "Phone Signup";
+            document.getElementById('phoneInput').focus();
+        }
+    }
+
+    function showStep2(method) {
+        document.getElementById('mainGateway').style.display = 'none';
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-2').style.display = 'block';
+
+        document.getElementById('otpWrapper').style.display = 'none';
+        document.getElementById('passwordWrapper').style.display = 'block';
+        document.getElementById('confirmPasswordWrapper').style.display = 'block';
+        document.getElementById('nameSurnameGroup').style.display = 'flex';
+
+        if(method === 'phone') {
+            document.getElementById('otpWrapper').style.display = 'block';
+            headerTitle.textContent = "Verify & Profile";
+            headerSubtitle.innerHTML = `Code sent to <b>${window.verifiedPhone}</b>`;
+            document.getElementById('otpInput').focus();
+        } else if(method === 'google' || method === 'apple') {
+            document.getElementById('passwordWrapper').style.display = 'none';
+            document.getElementById('confirmPasswordWrapper').style.display = 'none';
+            headerTitle.textContent = "Complete Profile";
+            headerSubtitle.textContent = "Just a few more details";
+            document.getElementById('nameInput').focus();
+        } else {
+            headerTitle.textContent = "Complete Profile";
+            headerSubtitle.innerHTML = `Signing up as <b>${window.verifiedEmail}</b>`;
+            document.getElementById('nameInput').focus();
+        }
+    }
+
+    function goBackToStep1() {
+        if(currentMode === 'google' || currentMode === 'apple') {
+            showGateway();
+        } else {
+            document.getElementById('step-2').style.display = 'none';
+            document.getElementById('step-1').style.display = 'block';
+            headerTitle.textContent = currentMode === 'email' ? "Email Signup" : "Phone Signup";
+            headerSubtitle.textContent = "Enter your details to continue";
+        }
+
+        document.getElementById('otpInput').value = '';
+        document.getElementById('nameInput').value = '';
+        document.getElementById('surnameInput').value = '';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('confirmPasswordInput').value = '';
+        document.getElementById('accountTypeInput').value = '';
+        handleAccountTypeChange();
+    }
+
+    function handleAccountTypeChange() {
+        const type = document.getElementById('accountTypeInput').value;
+        document.getElementById('vehicleFieldsWrapper').style.display = (type === 'ehailing') ? 'block' : 'none';
+        document.getElementById('handlerFieldsWrapper').style.display = (type === 'handler') ? 'block' : 'none';
+    }
+
+    // Mapbox Autocomplete
+    const input = document.getElementById('operatingCityInput');
+    const resultsBox = document.getElementById('citySuggestions');
+    let debounceTimer;
+    input.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        const query = input.value.trim();
+        if (query.length < 3) { resultsBox.style.display = 'none'; return; }
+        debounceTimer = setTimeout(() => {
+            const token = "__MAPBOX_PUBLIC_TOKEN__";
+            fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&country=za&types=place,locality&limit=5`)
+                .then(res => res.json()).then(data => {
+                    resultsBox.innerHTML = '';
+                    if (data.features?.length) {
+                        resultsBox.style.display = 'block';
+                        data.features.forEach(f => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerHTML = `<i class="fas fa-map-marker-alt" style="color:var(--primary-color)"></i> ${f.place_name}`;
+                            div.onclick = () => { input.value = f.place_name; resultsBox.style.display = 'none'; };
+                            resultsBox.appendChild(div);
+                        });
+                    }
+                });
+        }, 300);
+    });
+
+    // Step 1 Click
+    document.getElementById('nextStepBtn').addEventListener('click', async () => {
+        if (!navigator.onLine) return showError("No internet connection.");
+        if (isSubmitting) return;
+        errorMessage.style.display = 'none';
+        setLoading(true, 'nextStepBtn');
+
+        try {
+            if(currentMode === 'phone') {
+                const phone = document.getElementById('phoneInput').value.trim();
+                const normalized = normalizePhone(phone);
+                if (!/^(\+27|27|0)[6-8][0-9]{8}$/.test(normalized)) throw new Error("Please enter a valid SA mobile number.");
+                window.verifiedPhone = normalized.startsWith('+') ? normalized : '+' + normalized;
+
+                const exists = await checkUserExists(null, window.verifiedPhone);
+                if(exists) throw new Error("Account already exists. Please Sign In.");
+
+                confirmationResult = await auth.signInWithPhoneNumber(window.verifiedPhone, window.recaptchaVerifier);
+                showStep2('phone');
+            } else {
+                const email = document.getElementById('emailInput').value.trim().toLowerCase();
+                if(!email.includes('@')) throw new Error("Please enter a valid email.");
+
+                const methods = await auth.fetchSignInMethodsForEmail(email);
+                if(methods.length) throw new Error("Account already exists. Please Sign In.");
+
+                window.verifiedEmail = email;
+                showStep2('email');
+            }
+        } catch (e) {
+            showError(e.message);
+            try { window.recaptchaVerifier.render().then(wId => grecaptcha.reset(wId)); } catch(err){}
+        } finally { setLoading(false, 'nextStepBtn'); }
+    });
+
+    // Step 2 Final Submit
+    const finalBtn = document.getElementById('finalSubmitBtn');
+    if (finalBtn) {
+        finalBtn.addEventListener('click', async () => {
+            if (!navigator.onLine) return showError("No internet connection.");
+            if (isSubmitting) return;
+
+            if (!document.getElementById('termsCheck')?.checked) {
+                return showError("Please accept the Terms of Service and Privacy Policy.");
+            }
+
+            const name = document.getElementById('nameInput')?.value?.trim() || "";
+            const surname = document.getElementById('surnameInput')?.value?.trim() || "";
+            const accountType = document.getElementById('accountTypeInput')?.value;
+            const city = document.getElementById('operatingCityInput')?.value?.trim() || "";
+
+            const pwd = document.getElementById('passwordInput')?.value || "";
+            const confirmPwd = document.getElementById('confirmPasswordInput')?.value || "";
+            const otp = document.getElementById('otpInput')?.value?.trim() || "";
+
+            if(!name || !surname) return showError("Please fill in your name and surname.");
+            if(!accountType) return showError("Please select an Account Type.");
+            if(!city) return showError("Please enter your operating city/area.");
+
+            isSubmitting = true;
+            setLoading(true, 'finalSubmitBtn');
+
+            try {
+                let uid, phone = "", email = "", hashedPassword = "";
+
+                if ((currentMode === 'google' || currentMode === 'apple') && socialUser) {
+                    uid = socialUser.uid;
+                    email = socialUser.email || "";
+                    phone = socialUser.phoneNumber || "";
+                }
+                else if (currentMode === 'email') {
+                    if (!pwd) throw new Error("Please enter a password.");
+                    validatePassword(pwd, confirmPwd);
+
+                    email = window.verifiedEmail || document.getElementById('emailInput')?.value?.trim() || "";
+                    const cred = await auth.createUserWithEmailAndPassword(email, pwd);
+                    uid = cred.user.uid;
+                    hashedPassword = await sha256(pwd);
+                }
+                else {
+                    if(otp.length !== 6) throw new Error("Please enter the 6-digit SMS code.");
+                    if (!pwd) throw new Error("Please enter a password.");
+                    validatePassword(pwd, confirmPwd);
+
+                    phone = window.verifiedPhone || document.getElementById('phoneInput')?.value?.trim() || "";
+
+                    const phoneCred = firebase.auth.PhoneAuthProvider.credential(confirmationResult.verificationId, otp);
+                    const cred = await auth.signInWithCredential(phoneCred);
+                    uid = cred.user.uid;
+                    hashedPassword = await sha256(pwd);
+                }
+
+                // PAYLOAD PREPARATION (Ensuring status is unverified so scanner triggers)
+                const payload = {
+                    name: name,
+                    surname: surname,
+                    phone: phone,
+                    email: email,
+                    password: hashedPassword,
+                    type: accountType,
+                    operatingCity: city,
+                    credits: 0,
+                    verificationStatus: 'unverified', // <-- CRITICAL: Triggers Onboarding
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                };
+
+                let dbTable = "taxis";
+                if (accountType === 'ehailing' || accountType === 'minibus') {
+                    payload.vehicleMake = document.getElementById('vehicleMakeInput')?.value?.trim() || "";
+                    payload.vehicleModel = document.getElementById('vehicleModelInput')?.value?.trim() || "";
+                    payload.vehicleYear = document.getElementById('vehicleYearInput')?.value?.trim() || "";
+                    payload.vehicleColor = document.getElementById('vehicleColorInput')?.value?.trim() || "";
+                    payload.licenseNumber = document.getElementById('licenseInput')?.value?.trim() || "";
+                    payload.taxiRegistrationNumber = document.getElementById('taxiRegInput')?.value?.trim() || "";
+                    payload.vehicleType = accountType;
+                    dbTable = "taxis";
+                } else if (accountType === 'handler') {
+                    payload.idNumber = document.getElementById('idNumberInput')?.value?.trim() || "";
+                    payload.ref1Name = document.getElementById('ref1NameInput')?.value?.trim() || "";
+                    payload.ref1Phone = document.getElementById('ref1PhoneInput')?.value?.trim() || "";
+                    payload.ref2Name = document.getElementById('ref2NameInput')?.value?.trim() || "";
+                    payload.ref2Phone = document.getElementById('ref2PhoneInput')?.value?.trim() || "";
+                    payload.role = "handler";
+                    dbTable = "handlers";
+                }
+
+                await db.ref(`${dbTable}/${uid}`).set(payload);
+
+                // FIX: Force browser to remember user so it skips login.html
+                localStorage.setItem('userId', uid);
+                localStorage.setItem('userType', accountType === 'handler' ? 'handler' : 'driver');
+
+                // FIX: CLEAN AND TRIGGER WHATSAPP WELCOME MESSAGE
+                if (phone && phone !== "") {
+                    try {
+                        let normalizedPhone = phone.replace(/\s+/g, '').replace('+', '');
+                        if (normalizedPhone.startsWith('0')) {
+                            normalizedPhone = '27' + normalizedPhone.substring(1);
+                        }
+
+                        await fetch('https://app.asiye.cloud/whatsapp_bot.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'send_welcome', phone: normalizedPhone, name: name })
+                        });
+                    } catch (e) {
+                        console.error("WhatsApp trigger failed", e);
+                    }
+                }
+
+                // SHOW SUCCESS AND PUSH TO TAXI APP WITH ONBOARDING FLAG
+                const overlay = document.getElementById('successOverlay');
+                if (overlay) overlay.style.display = 'flex';
+
+                setTimeout(() => window.location.replace('taxi.html?onboarding=true'), 2000);
+
+            } catch (error) {
+                let msg = error.message;
+                if (error.code === 'auth/email-already-in-use') msg = "Account already exists. Please Sign In.";
+                if (error.code === 'auth/invalid-verification-code') msg = "Invalid SMS code.";
+                showError(msg);
+            } finally {
+                isSubmitting = false;
+                setLoading(false, 'finalSubmitBtn');
+            }
+        });
+    }
+
+    // Social Auth Handlers
+    document.getElementById('google-btn').addEventListener('click', () => handleSocialLogin('google'));
+    document.getElementById('apple-btn').addEventListener('click', () => handleSocialLogin('apple'));
+
+    async function handleSocialLogin(providerName) {
+        if (!navigator.onLine) return showError("No internet connection.");
+        errorMessage.style.display = 'none';
+        setLoading(true, `${providerName}-btn`);
+
+        const bridge = window.Asiye || window.Android;
+        if (bridge?.postMessage) {
+            bridge.postMessage(providerName === 'google' ? "triggerGoogleSignIn" : "triggerAppleSignIn");
+        } else if (providerName === 'google') {
+            try {
+                const res = await auth.signInWithPopup(googleProvider);
+                handleSocialSuccess(res.user, 'google');
+            } catch (e) {
+                showError(e.message);
+                setLoading(false, 'google-btn');
+            }
+        } else {
+            showError("Apple Sign-In is only supported on the native app.");
+            setLoading(false, 'apple-btn');
+        }
+    }
+
+    window.onGoogleNativeLoginSuccess = (u) => {
+        setLoading(false, 'google-btn');
+        handleSocialSuccess(typeof u === 'string' ? JSON.parse(u) : u, 'google');
+    };
+    window.onAppleNativeLoginSuccess = (u) => {
+        setLoading(false, 'apple-btn');
+        handleSocialSuccess(typeof u === 'string' ? JSON.parse(u) : u, 'apple');
+    };
+
+    async function handleSocialSuccess(data, provider) {
+        try {
+            let user = data;
+            if (data.idToken || data.identityToken) {
+                const cred = provider === 'google'
+                    ? firebase.auth.GoogleAuthProvider.credential(data.idToken)
+                    : new firebase.auth.OAuthProvider('apple.com').credential({ idToken: data.identityToken });
+                const res = await auth.signInWithCredential(cred);
+                user = res.user;
+            }
+            const exists = await checkUserExists(user.email, user.phoneNumber);
+            if (exists) {
+                showError("Account already exists. Redirecting...");
+                setTimeout(() => window.location.replace('login.html'), 2000);
+                return;
+            }
+
+            if (user.displayName) {
+                const parts = user.displayName.split(' ');
+                document.getElementById('nameInput').value = parts[0] || '';
+                document.getElementById('surnameInput').value = parts.slice(1).join(' ') || '';
+            }
+
+            socialUser = user;
+            currentMode = provider;
+            showStep2(provider);
+        } catch (e) {
+            showError(e.message);
+            setLoading(false, `${provider}-btn`);
+        }
+    }
+
+    function normalizePhone(p) {
+        let c = p.replace(/\s+/g, '');
+        if (c.startsWith('0')) return '27' + c.substring(1);
+        return c.startsWith('+27') ? c.substring(1) : c;
+    }
+
+    async function checkUserExists(email, phone) {
+        const nodes = ['taxis', 'handlers'];
+        for (const n of nodes) {
+            if (email) {
+                const s = await db.ref(n).orderByChild('email').equalTo(email.toLowerCase()).limitToFirst(1).once('value');
+                if (s.exists()) return true;
+            }
+            if (phone) {
+                const s = await db.ref(n).orderByChild('phone').equalTo(phone).limitToFirst(1).once('value');
+                if (s.exists()) return true;
+            }
+        }
+        return false;
+    }
+
+    function validatePassword(p1, p2) {
+        const strong = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!strong.test(p1)) throw new Error("Password: 8+ chars, with upper, lower, and number.");
+        if(p1 !== p2) throw new Error("Passwords do not match.");
+    }
+
+    function showError(msg) {
+        errorMessage.textContent = msg;
+        errorMessage.style.display = 'block';
+        document.querySelector('.container').scrollTop = 0;
+    }
+
+    function setLoading(isLoading, btnId) {
+        const btn = document.getElementById(btnId);
+        if(!btn) return;
+        btn.disabled = isLoading;
+        if (btnId === 'nextStepBtn') {
+            btn.innerHTML = isLoading ? '<div class="spinner" style="border-left-color: #000;"></div>' : 'Continue';
+        } else if (btnId === 'finalSubmitBtn') {
+            btn.innerHTML = isLoading ? '<div class="spinner" style="border-left-color: #000;"></div>' : 'Create Partner Account';
+        } else if (btnId === 'google-btn') {
+            btn.innerHTML = isLoading ? '<div class="spinner" style="border-left-color: #fff;"></div>' : '<img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" width="18"> Sign up with Google';
+        } else if (btnId === 'apple-btn') {
+            btn.innerHTML = isLoading ? '<div class="spinner" style="border-left-color: #fff;"></div>' : '<i class="fab fa-apple"></i> Sign up with Apple';
+        }
+    }
+</script>
+</body>
+</html>

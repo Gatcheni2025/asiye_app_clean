@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Asiye | Passenger Signup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4A00E0;
+            --primary-dark: #3a00b3;
+            --text-main: #212529;
+            --text-muted: #868e96;
+            --input-bg: #F4F4F6;
+            --bg-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        body {
+            font-family: "Manrope", sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .container::-webkit-scrollbar { display: none; }
+
+        .header-section {
+            flex-grow: 0;
+            margin-bottom: 20px;
+            padding-top: 20px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 4px 10px rgba(74, 0, 224, 0.15);
+            margin-bottom: 15px;
+            object-fit: contain;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0 0 6px 0;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .form-section {
+            flex-grow: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .input-wrapper {
+            margin-bottom: 12px;
+            text-align: left;
+            position: relative;
+        }
+
+        .phone-container { display: flex; gap: 8px; }
+
+        .country-code-box {
+            background: var(--input-bg);
+            border-radius: 12px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-main);
+            width: 80px;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .country-flag { width: 20px; margin-right: 5px; }
+
+        .modern-input {
+            background: var(--input-bg);
+            border-radius: 12px;
+            border: 1.5px solid transparent;
+            padding: 16px;
+            font-size: 0.95rem;
+            font-family: "Manrope", sans-serif;
+            font-weight: 600;
+            color: var(--text-main);
+            width: 100%;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .modern-input:focus {
+            background: #fff;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(74, 0, 224, 0.08);
+        }
+
+        .split-row { display: flex; gap: 10px; }
+        .split-input { flex: 1; }
+
+        .actions-section {
+            width: 100%;
+            margin-top: 15px;
+            flex-grow: 0;
+        }
+
+        .main-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(74, 0, 224, 0.25);
+            transition: transform 0.2s;
+            margin-bottom: 12px;
+        }
+        .main-btn:active { transform: scale(0.98); }
+        .main-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .switch-btn {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1.5px solid var(--primary-color);
+            width: 100%;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .switch-btn:active { transform: scale(0.98); }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .footer-section {
+            padding-top: 15px;
+            width: 100%;
+            flex-grow: 0;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 15px 0;
+            color: #ccc;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #eee; }
+        .divider::before { margin-right: 10px; } .divider::after { margin-left: 10px; }
+
+        .social-btn {
+            width: 100%;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .social-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .terms-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 15px 0;
+            font-size: 0.8rem;
+            color: #666;
+            text-align: left;
+            background: var(--input-bg);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .terms-box input {
+            margin-top: 3px;
+            accent-color: var(--primary-color);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .terms-box a {
+            color: var(--primary-color);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        #tosOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            padding: 20px;
+        }
+
+        .tos-card {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 22px;
+            padding: 24px;
+            position: relative;
+        }
+
+        .close-tos {
+            position: absolute;
+            right: 18px;
+            top: 12px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .tos-card h2 {
+            margin-bottom: 18px;
+            color: #222;
+        }
+
+        .tos-card p {
+            margin-bottom: 14px;
+            color: #555;
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+
+        .accept-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            background: var(--primary-color);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 18px;
+        }
+
+        .footer-links {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .footer-links a { color: var(--primary-color); text-decoration: none; font-weight: 700; }
+
+        .error-message {
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .spinner { border: 2px solid rgba(255, 255, 255, 0.3); border-left-color: #fff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #successOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #fff; z-index: 99999;
+            display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .success-circle { width: 70px; height: 70px; background: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; animation: popIn 0.5s; }
+        .success-circle i { color: white; font-size: 32px; }
+        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+        @media (max-height: 650px) {
+            .container { padding: 16px; }
+            .header-section { margin-bottom: 10px; padding-top: 10px; }
+            .logo { width: 40px; height: 40px; margin-bottom: 10px; }
+            h1 { font-size: 1.25rem; }
+            .modern-input, .main-btn, .switch-btn { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <img src="data/AsiyeNew.png" alt="Logo" class="logo">
+        <h1 id="headerTitle">Create Account</h1>
+        <p class="subtitle" id="headerSubtitle">Join Asiye as a Passenger</p>
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+
+    <div class="form-section">
+        <form id="signup-form" onsubmit="return false;">
+
+            <div id="step-1">
+                <div id="emailWrapper" class="input-wrapper">
+                    <input type="email" id="emailInput" class="modern-input" placeholder="name@example.com" autocomplete="email">
+                </div>
+
+                <div id="phoneWrapper" class="input-wrapper" style="display: none;">
+                    <div class="phone-container">
+                        <div class="country-code-box">
+                            <img src="https://flagcdn.com/w40/za.png" class="country-flag" alt="ZA"> +27
+                        </div>
+                        <input type="tel" id="phoneInput" class="modern-input" placeholder="e.g. 72 123 4567" autocomplete="tel">
+                    </div>
+                </div>
+            </div>
+
+            <div id="step-2" style="display: none;">
+                <div class="input-wrapper" id="otpWrapper" style="display: none;">
+                    <input type="number" id="otpInput" class="modern-input" placeholder="Enter 6-digit OTP code">
+                </div>
+
+                <div class="input-wrapper split-row" id="nameSurnameGroup">
+                    <div class="split-input">
+                        <input type="text" id="nameInput" class="modern-input" placeholder="First Name" autocomplete="given-name">
+                    </div>
+                    <div class="split-input">
+                        <input type="text" id="surnameInput" class="modern-input" placeholder="Surname" autocomplete="family-name">
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <input type="password" id="passwordInput" class="modern-input" placeholder="Create Password" autocomplete="new-password">
+                </div>
+
+                <div class="input-wrapper">
+                    <input type="password" id="confirmPasswordInput" class="modern-input" placeholder="Confirm Password" autocomplete="new-password">
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="actions-section">
+        <div id="step-1-btns">
+            <button id="nextStepBtn" class="main-btn">Continue</button>
+            <button class="switch-btn" onclick="toggleInputMode()" id="modeSwitchText">
+                <i class="fas fa-phone-alt"></i> Use Phone Number instead
+            </button>
+            <p style="font-size: 0.7rem; color: #999; margin-top: 10px;">
+                By continuing, you agree to our <a href="javascript:void(0)" onclick="showTOS('terms')" style="color: #4A00E0; text-decoration: none; font-weight: 600;">Terms</a> & <a href="javascript:void(0)" onclick="showTOS('privacy')" style="color: #4A00E0; text-decoration: none; font-weight: 600;">Privacy</a>.
+            </p>
+        </div>
+
+        <div id="step-2-btns" style="display: none;">
+            <div class="terms-box">
+                <input type="checkbox" id="termsCheck">
+                <label for="termsCheck">
+                    I agree to the
+                    <a href="javascript:void(0)" onclick="showTOS('terms')">Terms of Service</a>
+                    and
+                    <a href="javascript:void(0)" onclick="showTOS('privacy')">Privacy Policy</a>
+                </label>
+            </div>
+
+            <button id="finalSubmitBtn" class="main-btn">Create Account</button>
+            <div class="back-link" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-section" id="footerSection">
+        <div class="divider">OR</div>
+
+        <button type="button" id="google-btn" class="social-btn">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" width="18">
+            Sign up with Google
+        </button>
+
+        <button type="button" id="apple-btn" class="social-btn" style="background-color: #000000; color: #ffffff; margin-top: 10px;">
+            <i class="fab fa-apple" style="font-size: 1.1rem;"></i> Sign up with Apple
+        </button>
+
+        <div class="footer-links">
+            Already have an account? <a href="login.html">Sign In</a>
+        </div>
+    </div>
+
+</div>
+
+<div id="recaptcha-container"></div>
+
+<div id="tosOverlay">
+    <div class="tos-card">
+        <div class="close-tos" onclick="document.getElementById('tosOverlay').style.display='none'">&times;</div>
+        <h2 id="tosTitle"></h2>
+        <div id="tosContent"></div>
+        <button class="accept-btn" onclick="document.getElementById('termsCheck').checked=true; document.getElementById('tosOverlay').style.display='none';">
+            Accept & Continue
+        </button>
+    </div>
+</div>
+
+<div id="successOverlay">
+    <div class="success-circle"><i class="fas fa-check"></i></div>
+    <h2 style="font-weight: 800; color: #333; margin: 0 0 8px 0; font-size: 1.1rem;">Account Created!</h2>
+    <p style="color: #666; font-size: 0.8rem;">Logging you in...</p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    (function() {
+        if (window.location.search.includes('state=') || window.location.search.includes('code=')) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    })();
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCX_euO2EEPhfhuG5DTsSi5vCpZ9MFZczY",
+        authDomain: "asiye-80386.firebaseapp.com",
+        databaseURL: "https://asiye-80386-default-rtdb.firebaseio.com",
+        projectId: "asiye-80386",
+        storageBucket: "asiye-80386.firebasestorage.app",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+    let currentMode = 'email';
+    let googleUser = null;
+    let confirmationResult = null;
+    let isSubmitting = false;
+
+    const errorMessage = document.getElementById('errorMessage');
+    const headerTitle = document.getElementById('headerTitle');
+    const headerSubtitle = document.getElementById('headerSubtitle');
+    const modeSwitchText = document.getElementById('modeSwitchText');
+
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
+
+    function showTOS(type){
+        document.getElementById('tosOverlay').style.display = 'flex';
+        const title = document.getElementById('tosTitle');
+        const content = document.getElementById('tosContent');
+        if(type === 'terms'){
+            title.innerText = "Terms of Service";
+            content.innerHTML = `<p><strong>1. Services:</strong> Asiye connects commuters with taxi and parcel providers.</p><p><strong>2. Subscription:</strong> Drivers may be charged subscription fees.</p><p><strong>3. Account Deletion:</strong> Users can permanently delete their account and data in settings.</p>`;
+        } else {
+            title.innerText = "Privacy Policy";
+            content.innerHTML = `<p><strong>1. Data Collection:</strong> We collect phone, email, and location data.</p><p><strong>2. Compliance:</strong> We comply with POPIA regulations.</p><p><strong>3. Security:</strong> Your data is encrypted.</p>`;
+        }
+    }
+
+    function toggleInputMode() {
+        errorMessage.style.display = 'none';
+        if (currentMode === 'email') {
+            currentMode = 'phone';
+            document.getElementById('emailWrapper').style.display = 'none';
+            document.getElementById('phoneWrapper').style.display = 'block';
+            modeSwitchText.innerHTML = '<i class="fas fa-envelope"></i> Use Email instead';
+            headerSubtitle.textContent = "Sign up using your number";
+            document.getElementById('phoneInput').focus();
+        } else {
+            currentMode = 'email';
+            document.getElementById('phoneWrapper').style.display = 'none';
+            document.getElementById('emailWrapper').style.display = 'block';
+            modeSwitchText.innerHTML = '<i class="fas fa-phone-alt"></i> Use Phone Number instead';
+            headerSubtitle.textContent = "Sign up using your email";
+            document.getElementById('emailInput').focus();
+        }
+    }
+
+    function showStep2(method) {
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-1-btns').style.display = 'none';
+        document.getElementById('footerSection').style.display = 'none';
+        document.getElementById('step-2').style.display = 'block';
+        document.getElementById('step-2-btns').style.display = 'block';
+
+        if(method === 'phone') {
+            document.getElementById('otpWrapper').style.display = 'block';
+            headerTitle.textContent = "Verify & Profile";
+            headerSubtitle.innerHTML = `Code sent to <b>${window.verifiedPhone}</b>`;
+            document.getElementById('otpInput').focus();
+        } else if(method === 'google' || method === 'apple') {
+            document.getElementById('otpWrapper').style.display = 'none';
+            document.getElementById('passwordInput').parentElement.style.display = 'none';
+            document.getElementById('confirmPasswordInput').parentElement.style.display = 'none';
+            document.getElementById('nameSurnameGroup').style.display = 'none';
+            headerTitle.textContent = "Complete Profile";
+            headerSubtitle.textContent = "Just a few more details";
+        } else {
+            document.getElementById('otpWrapper').style.display = 'none';
+            document.getElementById('nameSurnameGroup').style.display = 'flex';
+            headerTitle.textContent = "Complete Profile";
+            headerSubtitle.innerHTML = `Signing up as <b>${window.verifiedEmail}</b>`;
+            document.getElementById('nameInput').focus();
+        }
+    }
+
+    function goBack() {
+        document.getElementById('step-2').style.display = 'none';
+        document.getElementById('step-2-btns').style.display = 'none';
+        document.getElementById('step-1').style.display = 'block';
+        document.getElementById('step-1-btns').style.display = 'block';
+        document.getElementById('footerSection').style.display = 'block';
+        headerTitle.textContent = "Create Account";
+        headerSubtitle.textContent = "Join Asiye as a Passenger";
+        errorMessage.style.display = 'none';
+
+        // Reset inputs
+        document.getElementById('otpInput').value = '';
+        document.getElementById('nameInput').value = '';
+        document.getElementById('surnameInput').value = '';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('confirmPasswordInput').value = '';
+
+        document.getElementById('passwordInput').parentElement.style.display = 'block';
+        document.getElementById('confirmPasswordInput').parentElement.style.display = 'block';
+        googleUser = null;
+        if(currentMode === 'google' || currentMode === 'apple') currentMode = 'email';
+    }
+
+    document.getElementById('nextStepBtn').addEventListener('click', async () => {
+        if (!navigator.onLine) return showError("No internet connection.");
+        if (isSubmitting) return;
+        errorMessage.style.display = 'none';
+        setLoading(true, 'nextStepBtn');
+
+        try {
+            if(currentMode === 'phone') {
+                const phone = document.getElementById('phoneInput').value.trim();
+                const normalized = normalizePhone(phone);
+                if (!/^(\+27|27|0)[6-8][0-9]{8}$/.test(normalized)) throw new Error("Please enter a valid SA mobile number.");
+                window.verifiedPhone = normalized.startsWith('+') ? normalized : '+' + normalized;
+                const userCheck = await findUserByPhone(window.verifiedPhone);
+                if(userCheck) throw new Error("Account already exists. Please Sign In.");
+                confirmationResult = await auth.signInWithPhoneNumber(window.verifiedPhone, window.recaptchaVerifier);
+                showStep2('phone');
+            } else {
+                const email = document.getElementById('emailInput').value.trim().toLowerCase();
+                if(!email.includes('@')) throw new Error("Please enter a valid email.");
+                const methods = await auth.fetchSignInMethodsForEmail(email);
+                if(methods.length) throw new Error("Account already exists. Please Sign In.");
+                window.verifiedEmail = email;
+                showStep2('email');
+            }
+        } catch (e) {
+            showError(e.message);
+            try { window.recaptchaVerifier.render().then(wId => grecaptcha.reset(wId)); } catch(err){}
+        } finally { setLoading(false, 'nextStepBtn'); }
+    });
+
+   document.getElementById('finalSubmitBtn').addEventListener('click', async () => {
+        if (!navigator.onLine) return showError("No internet connection.");
+        if (isSubmitting) return;
+        if(!document.getElementById('termsCheck').checked) return showError("Please accept Terms and Privacy Policy.");
+
+        const name = document.getElementById('nameInput').value.trim();
+        const surname = document.getElementById('surnameInput').value.trim();
+        if((currentMode !== 'google' && currentMode !== 'apple') && (!name || !surname)) return showError("Please enter your name and surname.");
+
+        isSubmitting = true;
+        setLoading(true, 'finalSubmitBtn');
+
+        try {
+            let uid, phone = "", email = "";
+            if ((currentMode === 'google' || currentMode === 'apple') && googleUser) {
+                uid = googleUser.uid; email = googleUser.email || ""; phone = googleUser.phoneNumber || "";
+            } else if (currentMode === 'email') {
+                const pwd = document.getElementById('passwordInput').value;
+                const confirmPwd = document.getElementById('confirmPasswordInput').value;
+                validatePassword(pwd, confirmPwd);
+                email = window.verifiedEmail;
+                const cred = await auth.createUserWithEmailAndPassword(email, pwd);
+                uid = cred.user.uid;
+                await cred.user.sendEmailVerification();
+                alert("Verification email sent. Please verify your email before login.");
+            } else {
+                const otp = document.getElementById('otpInput').value.trim();
+                const pwd = document.getElementById('passwordInput').value;
+                const confirmPwd = document.getElementById('confirmPasswordInput').value;
+                if(otp.length !== 6) throw new Error("Please enter the 6-digit OTP.");
+                validatePassword(pwd, confirmPwd);
+                phone = window.verifiedPhone;
+                const dummyEmail = phone + '@asiye.app';
+                const cred = await auth.createUserWithEmailAndPassword(dummyEmail, pwd);
+                uid = cred.user.uid;
+                const phoneCred = firebase.auth.PhoneAuthProvider.credential(confirmationResult.verificationId, otp);
+                await cred.user.linkWithCredential(phoneCred);
+            }
+
+            const pendingRef = localStorage.getItem('pendingAdReferral');
+            let referredBy = null, referredAd = null;
+            if (pendingRef) {
+                const parts = pendingRef.split('_');
+                if (parts.length >= 3) { referredBy = parts[1]; referredAd = parts.slice(2).join('_'); }
+            }
+
+            await db.ref('commuters/' + uid).set({
+                name, surname, phone, email,
+                password: "", type: "commuter", credits: 0,
+                referredBy, referredAd, adReferralProcessed: !!pendingRef,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            // ==========================================
+            // TRIGGER WHATSAPP WELCOME MESSAGE
+            // ==========================================
+            if (phone && phone !== "") {
+                try {
+                    // Update 'whatsapp_bot.php' to the real name of your PHP file
+                    await fetch('https://app.asiye.cloud/whatsapp_bot.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'send_welcome', phone: phone, name: name })
+                    });
+                } catch (e) {
+                    console.error("WhatsApp trigger failed", e);
+                }
+            }
+            // ==========================================
+
+            if (pendingRef) localStorage.removeItem('pendingAdReferral');
+            const bridge = window.Asiye || window.Android;
+            if (bridge && bridge.postMessage) bridge.postMessage(JSON.stringify({ action: 'onUserLoggedIn', uid: uid, type: 'commuter' }));
+            document.getElementById('successOverlay').style.display = 'flex';
+            setTimeout(() => window.location.replace('index.html'), 1500);
+        } catch (error) {
+            let msg = error.message;
+            if (error.code === 'auth/email-already-in-use') msg = "Account already exists.";
+            showError(msg);
+        } finally { isSubmitting = false; setLoading(false, 'finalSubmitBtn'); }
+    });
+
+    document.getElementById('google-btn').addEventListener('click', async () => {
+        if (!navigator.onLine) return showError("No internet connection.");
+        errorMessage.style.display = 'none';
+        setLoading(true, 'google-btn');
+        const bridge = window.Asiye || window.Android;
+        if (bridge && bridge.postMessage) {
+            bridge.postMessage("triggerGoogleSignIn");
+        } else {
+            try {
+                const res = await auth.signInWithPopup(googleProvider);
+                handleOAuthUser(res.user);
+            } catch (e) {
+                showError(e.message);
+                setLoading(false, 'google-btn');
+            }
+        }
+    });
+
+    if (document.getElementById('apple-btn')) {
+        document.getElementById('apple-btn').addEventListener('click', async () => {
+            if (!navigator.onLine) return showError("No internet connection.");
+            errorMessage.style.display = 'none';
+            setLoading(true, 'apple-btn');
+            const bridge = window.Asiye || window.Android;
+            if (bridge && bridge.postMessage) {
+                bridge.postMessage("triggerAppleSignIn");
+            } else {
+                showError("Apple Sign-In is only supported on the native app.");
+                setLoading(false, 'apple-btn');
+            }
+        });
+    }
+
+    window.onGoogleNativeLoginSuccess = function(userData) {
+        setLoading(false, 'google-btn');
+        let data = (typeof userData === 'string') ? JSON.parse(userData) : userData;
+        const cred = firebase.auth.GoogleAuthProvider.credential(data.idToken);
+        auth.signInWithCredential(cred).then(res => handleOAuthUser(res.user)).catch(e => showError(e.message));
+    };
+
+    window.onAppleNativeLoginSuccess = function(userData) {
+        setLoading(false, 'apple-btn');
+        let data = (typeof userData === 'string') ? JSON.parse(userData) : userData;
+        const provider = new firebase.auth.OAuthProvider('apple.com');
+        const cred = provider.credential({ idToken: data.identityToken });
+        auth.signInWithCredential(cred).then(res => {
+            if (data.displayName && !res.user.displayName) res.user.updateProfile({ displayName: data.displayName });
+            handleOAuthUser(res.user);
+        }).catch(e => showError(e.message));
+    };
+
+    async function handleOAuthUser(user) {
+        try {
+            const snap = await db.ref('commuters/' + user.uid).once('value');
+            if (snap.exists()) {
+                showError("Account already exists. Redirecting...");
+                setTimeout(() => window.location.replace('login.html'), 2000);
+                return;
+            }
+            googleUser = user; currentMode = 'google'; showStep2(currentMode);
+        } catch (error) { showError(error.message); }
+    }
+
+    function normalizePhone(p) {
+        let c = p.replace(/\s+/g, '');
+        if (c.startsWith('0')) return '27' + c.substring(1);
+        return c.startsWith('+27') ? c.substring(1) : c;
+    }
+    async function findUserByPhone(phone) {
+        const snap = await db.ref('commuters').orderByChild('phone').equalTo(phone).limitToFirst(1).once('value');
+        return snap.exists();
+    }
+    function validatePassword(p1, p2) {
+        const strong = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!strong.test(p1)) throw new Error("Password must be at least 8 chars with uppercase, lowercase and a number.");
+        if(p1 !== p2) throw new Error("Passwords do not match.");
+    }
+    function showError(msg) { errorMessage.textContent = msg; errorMessage.style.display = 'block'; }
+    function setLoading(isLoading, btnId) {
+        const btn = document.getElementById(btnId);
+        if(!btn) return;
+        btn.disabled = isLoading;
+        if (btnId === 'nextStepBtn') {
+            btn.innerHTML = isLoading ? '<div class="spinner"></div>' : 'Continue';
+        } else if (btnId === 'finalSubmitBtn') {
+            btn.innerHTML = isLoading ? '<div class="spinner"></div>' : 'Create Account';
+        } else if (btnId === 'google-btn') {
+            btn.innerHTML = isLoading ? '<div class="spinner"></div>' : '<img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" width="18"> Sign up with Google';
+        } else if (btnId === 'apple-btn') {
+            btn.innerHTML = isLoading ? '<div class="spinner" style="border-left-color: #000;"></div>' : '<i class="fab fa-apple" style="font-size: 1.1rem;"></i> Sign up with Apple';
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Asiye Handler | Modern Logistics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css">
+
+    <style>
+        /* ---------- RESET & MODERN VARIABLES ---------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --primary: #000000;         /* High contrast black */
+            --primary-light: #222222;
+            --accent: #FF9500;          /* Vibrant Orange from image */
+            --accent-soft: #FFF4E5;
+            --bg: #F5F5F7;              /* Apple-like light gray bg */
+            --card-bg: #FFFFFF;
+            --text: #1D1D1F;
+            --text-muted: #86868B;
+            --border: #E5E5EA;
+            --success: #34C759;
+            --danger: #FF3B30;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 10px 20px rgba(0,0,0,0.06);
+            --shadow-float: 0 16px 32px rgba(0,0,0,0.12);
+            --radius-lg: 28px;
+            --radius-md: 16px;
+            --radius-sm: 10px;
+            --transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* ---------- MOBILE TOP HEADER (Mimicking the image) ---------- */
+        .mobile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #E5E5EA;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .header-info h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .header-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .header-action {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        /* ---------- LAYOUT ---------- */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar (Desktop) -> Floating Bottom Nav (Mobile) */
+        .sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 0 32px 32px;
+            width: calc(100% - 260px);
+        }
+
+        .sidebar-brand {
+            padding: 0 24px 24px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 24px;
+            margin: 4px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .nav-item i { font-size: 1.2rem; width: 24px; text-align: center; }
+        .nav-item:hover { background: #F5F5F5; color: var(--primary); }
+        .nav-item.active { background: var(--primary); color: #FFF; }
+
+        /* --- MOBILE ADAPTATION (Floating Bottom Nav) --- */
+        @media (max-width: 768px) {
+            .mobile-header { padding: 16px 20px; }
+            .sidebar {
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 90%;
+                height: 70px;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                border-radius: 40px;
+                background: #111111; /* Dark floating nav */
+                padding: 0 10px;
+                box-shadow: var(--shadow-float);
+                border: none;
+            }
+            .sidebar-brand, .sidebar-profile-hide { display: none !important; }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 0 20px 100px; /* Space for bottom nav */
+            }
+            .nav-item {
+                margin: 0;
+                padding: 10px;
+                border-radius: 50%;
+                width: 48px;
+                height: 48px;
+                justify-content: center;
+                color: #888;
+            }
+            .nav-item span { display: none; }
+            .nav-item.active {
+                background: var(--accent); /* Orange highlight */
+                color: #000;
+                box-shadow: 0 4px 10px rgba(255, 149, 0, 0.4);
+            }
+        }
+
+        /* View transitions */
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Typography & Headers */
+        h2.section-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        /* ---------- SEARCH BAR ---------- */
+        .search-bar {
+            background: var(--card-bg);
+            border-radius: 50px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+        }
+        .search-bar input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .search-bar i { color: var(--text-muted); }
+
+        /* ---------- MODERN CARDS (Deliveries) ---------- */
+        .deliveries-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .modern-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0,0,0,0.02);
+            transition: var(--transition);
+        }
+        .modern-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            background: #F4F4F5;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--primary);
+        }
+        .card-title-group {
+            display: flex;
+            flex-direction: column;
+            margin-left: 12px;
+        }
+        .d-id { font-weight: 800; font-size: 1.05rem; }
+        .d-sub { font-size: 0.8rem; color: var(--text-muted); }
+        .status-pill {
+            background: var(--accent-soft);
+            color: #E68A00;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .status-pill.green { background: #E8F5E9; color: var(--success); }
+
+        /* Visual Timeline */
+        .timeline-visual {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            position: relative;
+        }
+        .timeline-visual::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            right: 10px;
+            height: 2px;
+            background: dashed 2px var(--border);
+            z-index: 1;
+        }
+        .t-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 3px solid var(--border);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .t-dot.active { border-color: var(--accent); background: var(--accent); }
+        .t-dot.active::after { content: ''; width: 8px; height: 8px; background: #fff; border-radius: 50%; }
+
+        .card-locations {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+        .card-locations small { color: var(--text-muted); font-weight: 500; }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ---------- BUTTONS ---------- */
+        .btn-primary {
+            background: var(--primary);
+            color: #FFF;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover { background: var(--accent); color: #000; box-shadow: 0 8px 20px rgba(255,149,0,0.3); }
+        .btn-primary:disabled { background: #E5E5EA; color: #A1A1A6; cursor: not-allowed; box-shadow: none; }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--primary);
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+        }
+        .btn-outline:hover { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+        /* ---------- STATS GRID ---------- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card:nth-child(2) { background: var(--accent); color: #000; }
+        .stat-card:nth-child(3) { background: var(--card-bg); color: var(--primary); border: 1px solid var(--border); }
+        .stat-card:nth-child(4) { background: var(--card-bg); color: var(--primary); border: 1px solid var(--border); }
+
+        .stat-title { font-size: 0.85rem; font-weight: 500; opacity: 0.9; margin-bottom: 8px; }
+        .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
+
+        /* ---------- MAP ---------- */
+        .tracking-map {
+            height: 400px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+        }
+
+        /* ---------- FORMS & MODALS ---------- */
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            background: #F4F4F5;
+            border: 2px solid transparent;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            margin-bottom: 16px;
+        }
+        .form-control:focus { outline: none; border-color: var(--accent); background: #fff; }
+
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 32px;
+            width: 90%; max-width: 400px;
+            padding: 32px;
+            box-shadow: var(--shadow-float);
+            text-align: center;
+        }
+        .modal-content h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 10px; }
+
+        /* Wholesale Bags */
+        .package-option {
+            background: var(--bg);
+            border: 2px solid transparent;
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .package-option.selected { border-color: var(--accent); background: var(--accent-soft); }
+        .package-price { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white; padding: 14px 28px;
+            border-radius: 50px; z-index: 10000; font-weight: 600;
+            box-shadow: var(--shadow-float); font-size: 0.95rem;
+            animation: slideDown 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+        /* Toggle */
+        .online-toggle {
+            background: #F4F4F5; border-radius: 50px; padding: 6px 12px;
+            display: inline-flex; align-items: center; gap: 12px; font-size: 0.85rem; font-weight: 600;
+        }
+        .toggle-switch { width: 44px; height: 24px; background: #D1D1D6; border-radius: 40px; cursor: pointer; position: relative; transition: 0.3s; }
+        .toggle-switch.active { background: var(--success); }
+        .toggle-slider { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch.active .toggle-slider { transform: translateX(20px); }
+
+        .earnings-table table { width: 100%; border-collapse: collapse; }
+        .earnings-table th { text-align: left; padding: 16px; color: var(--text-muted); font-size: 0.8rem; border-bottom: 1px solid var(--border); }
+        .earnings-table td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 0.9rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+
+    <!-- Desktop Sidebar / Mobile Bottom Nav -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-cube" style="color: var(--accent);"></i> Asiye
+        </div>
+
+        <div class="sidebar-profile-hide" style="padding: 0 24px 20px;">
+            <div class="online-toggle" style="width: 100%; justify-content: space-between;">
+                <span id="statusText">🟢 Online</span>
+                <div class="toggle-switch active" id="onlineToggle" onclick="toggleOnlineStatus()"><div class="toggle-slider"></div></div>
+            </div>
+        </div>
+
+        <div class="nav-item active" data-page="available"><i class="fas fa-layer-group"></i> <span>Radar</span></div>
+        <div class="nav-item" data-page="my-deliveries"><i class="fas fa-box-open"></i> <span>Shipments</span></div>
+        <div class="nav-item" data-page="map"><i class="fas fa-map-location-dot"></i> <span>Tracking</span></div>
+        <div class="nav-item" data-page="orders"><i class="fas fa-shopping-bag"></i> <span>Inventory</span></div>
+        <div class="nav-item" data-page="earnings"><i class="fas fa-wallet"></i> <span>Wallet</span></div>
+        <div class="nav-item" data-page="profile"><i class="fas fa-user-circle"></i> <span>Profile</span></div>
+        <div class="nav-item" data-page="logout" style="margin-top: auto;"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></div>
+    </div>
+
+    <div class="main-content">
+        <!-- Mobile Top Header -->
+        <div class="mobile-header">
+            <div class="header-profile">
+                <img src="https://ui-avatars.com/api/?name=Handler&background=111&color=fff" id="userProfileImgTop" class="header-avatar" onclick="document.querySelector('.nav-item[data-page=\'profile\']').click()">
+                <div class="header-info">
+                    <h3 id="userNameDisplayTop">Handler Name</h3>
+                    <p id="areaDisplayTop"><i class="fas fa-location-dot" style="color: var(--accent);"></i> Location</p>
+                </div>
+            </div>
+            <div class="header-action" onclick="refreshAvailableDeliveries()"><i class="fas fa-sync-alt"></i></div>
+        </div>
+
+        <!-- Available Deliveries View -->
+        <div id="available-view" class="view-section active">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search available shipments...">
+                <i class="fas fa-sliders-h"></i>
+            </div>
+
+            <h2 class="section-title">Current Tracking Radar</h2>
+            <div id="availableMapContainer" class="tracking-map"></div>
+
+            <h2 class="section-title" style="margin-top: 32px;">Recent Requests</h2>
+            <div id="availableDeliveriesContainer" class="deliveries-grid">
+                <div style="text-align:center; padding:60px; color: var(--text-muted);">Loading radar...</div>
+            </div>
+        </div>
+
+        <!-- My Deliveries View -->
+        <div id="my-deliveries-view" class="view-section">
+            <h2 class="section-title">Active Shipments</h2>
+            <div id="myDeliveriesContainer" class="deliveries-grid"></div>
+
+            <h2 class="section-title" style="margin-top: 40px;">History</h2>
+            <div class="modern-card earnings-table" style="padding: 0; overflow-x: auto;">
+                <table><thead><tr><th>Order ID</th><th>Route</th><th>Fee</th><th>Status</th></tr></thead><tbody id="deliveryHistoryList"></tbody></table>
+            </div>
+        </div>
+
+        <!-- Order Bags View -->
+        <div id="orders-view" class="view-section">
+            <h2 class="section-title">Inventory & Supplies</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Bags Owned</div>
+                    <div class="stat-value" id="bagsAvailable" style="font-size: 1.2rem; margin-top:10px;">S:0 | M:0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Total Orders</div>
+                    <div class="stat-value" id="totalOrders">0</div>
+                </div>
+            </div>
+
+            <div class="modern-card">
+                <h3 style="margin-bottom: 16px;">Wholesale Store</h3>
+                <div id="packageOptions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                    <div class="package-option selected" data-size="S" onclick="selectBagSize('S')">
+                        <div><strong>Small</strong><br><small style="color:var(--text-muted)">R35 / ea</small></div>
+                    </div>
+                    <div class="package-option" data-size="M" onclick="selectBagSize('M')">
+                        <div><strong>Medium</strong><br><small style="color:var(--text-muted)">R45 / ea</small></div>
+                    </div>
+                    <div class="package-option" data-size="L" onclick="selectBagSize('L')">
+                        <div><strong>Large</strong><br><small style="color:var(--text-muted)">R60 / ea</small></div>
+                    </div>
+                    <div class="package-option" data-size="XL" onclick="selectBagSize('XL')">
+                        <div><strong>X-Large</strong><br><small style="color:var(--text-muted)">R120 / ea</small></div>
+                    </div>
+                </div>
+
+                <input type="number" id="customQuantity" class="form-control" min="10" max="100" step="5" value="10" oninput="updateCustomPrice()" placeholder="Quantity (Min 10)">
+                <textarea id="deliveryAddress" class="form-control" rows="2" placeholder="Delivery Address"></textarea>
+
+                <div id="customPrice" style="font-size: 1.4rem; font-weight: 800; margin-bottom: 16px; text-align: center;">R350.00</div>
+                <button class="btn-primary" onclick="placeBagOrder()">Checkout (PayFast)</button>
+            </div>
+
+            <div class="modern-card earnings-table" style="padding: 0; overflow-x: auto; margin-top: 24px;">
+                <table><thead><tr><th>Order</th><th>Details</th><th>Amount</th><th>Status</th></tr></thead><tbody id="orderHistoryList"></tbody></table>
+            </div>
+        </div>
+
+        <!-- Earnings View -->
+        <div id="earnings-view" class="view-section">
+            <h2 class="section-title">Wallet</h2>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-title">Available Balance</div><div class="stat-value" id="totalEarnings">R0</div></div>
+                <div class="stat-card"><div class="stat-title">This Week</div><div class="stat-value" id="weeklyEarnings">R0</div></div>
+                <div class="stat-card"><div class="stat-title">Today</div><div class="stat-value" id="todayEarnings">R0</div></div>
+                <div class="stat-card"><div class="stat-title">Deliveries</div><div class="stat-value" id="totalDeliveries">0</div></div>
+            </div>
+            <button class="btn-primary" style="margin-bottom: 30px;" onclick="requestPayout()">Request Payout</button>
+
+            <div class="modern-card earnings-table" style="padding: 0; overflow-x: auto;">
+                <table><thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead><tbody id="earningsHistoryList"></tbody></table>
+            </div>
+        </div>
+
+        <!-- Map View -->
+        <div id="map-view" class="view-section">
+            <h2 class="section-title">Live Tracking</h2>
+            <div id="deliveryMap" class="tracking-map" style="height: 60vh;"></div>
+            <div id="mapDeliveryInfo" class="modern-card" style="display: none; position: absolute; bottom: 100px; left: 20px; right: 20px; z-index: 10;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h4 id="mapDeliveryTitle" style="font-weight: 800;"></h4>
+                        <p id="mapDeliveryStatus" style="color: var(--accent); font-weight: 600; font-size: 0.9rem;"></p>
+                    </div>
+                    <div class="brand-icon" style="background: var(--primary); color: white;"><i class="fas fa-truck-fast"></i></div>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn-primary" id="navigateToPickupBtn" style="display: none;">Navigate</button>
+                    <button class="btn-primary" id="markCollectedBtn" style="display: none;">Collect</button>
+                    <button class="btn-primary" id="markDeliveredBtn" style="display: none;">Assign Taxi</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile View -->
+        <div id="profile-view" class="view-section">
+            <h2 class="section-title">Settings</h2>
+
+            <div class="modern-card" style="text-align: center; margin-bottom: 24px;">
+                <img id="userProfileImg" src="https://ui-avatars.com/api/?name=H&background=111&color=fff" style="width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 16px; cursor: pointer; object-fit: cover;" onclick="document.getElementById('profilePicUpload').click()">
+                <input type="file" id="profilePicUpload" style="display:none" accept="image/*">
+                <h3 id="userNameDisplay" style="font-size: 1.2rem; font-weight: 800;">Handler</h3>
+                <div id="verificationStatusBadge" class="status-pill" style="display: inline-block; margin-top: 8px;">Pending Verification</div>
+            </div>
+
+            <div class="modern-card" style="margin-bottom: 24px;">
+                <h3 style="margin-bottom: 16px;">Business Address</h3>
+                <div id="addressSearchContainer"></div>
+                <div id="selectedAddressDisplay" style="display: none; margin-top: 16px; padding: 16px; background: var(--bg); border-radius: var(--radius-sm);">
+                    <strong>Selected:</strong> <span id="selectedAddressText"></span>
+                    <div id="areaAvailabilityMsg" style="margin-top: 5px; font-weight: 600;"></div>
+                </div>
+                <button id="saveAddressBtn" class="btn-primary" style="margin-top: 16px;" onclick="saveHandlerAddress()">Save Address</button>
+            </div>
+
+            <div class="modern-card">
+                <h3 style="margin-bottom: 16px;">Documents</h3>
+                <button class="btn-outline" style="margin-bottom: 12px; text-align: left; display: flex; justify-content: space-between;" onclick="document.getElementById('idFrontInput').click()">
+                    <span><i class="fas fa-id-card"></i> ID Front</span> <span id="idFrontName"></span>
+                </button>
+                <input type="file" id="idFrontInput" style="display:none" accept="image/*" onchange="handleIdFrontSelect(event)">
+
+                <button class="btn-outline" style="margin-bottom: 12px; text-align: left; display: flex; justify-content: space-between;" onclick="document.getElementById('idBackInput').click()">
+                    <span><i class="fas fa-id-card"></i> ID Back</span> <span id="idBackName"></span>
+                </button>
+                <input type="file" id="idBackInput" style="display:none" accept="image/*" onchange="handleIdBackSelect(event)">
+
+                <button class="btn-outline" style="margin-bottom: 24px; text-align: left; display: flex; justify-content: space-between;" onclick="document.getElementById('proofAddressInput').click()">
+                    <span><i class="fas fa-file-invoice"></i> Proof of Address</span> <span id="proofAddressName"></span>
+                </button>
+                <input type="file" id="proofAddressInput" style="display:none" accept="image/*" onchange="handleProofAddressSelect(event)">
+
+                <button id="submitVerificationBtn" class="btn-primary" onclick="submitVerification()">Submit Documents</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div id="collectModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirm Collection</h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Have you received the parcel?</p>
+        <div style="background: var(--bg); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 24px; text-align: left;">
+            <strong>ID:</strong> <span id="collectOrderId"></span><br>
+            <strong>Pickup:</strong> <span id="collectPickupAddress"></span>
+        </div>
+        <button class="btn-primary" style="margin-bottom: 12px;" onclick="confirmCollection()">Confirm</button>
+        <button class="btn-outline" onclick="closeModal('collectModal')">Cancel</button>
+    </div>
+</div>
+
+<div id="deliverModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h3>Assign to Taxi</h3>
+        <div id="nearbyTaxisList" style="max-height: 300px; overflow-y: auto; margin: 20px 0; text-align: left;"></div>
+        <button class="btn-outline" onclick="closeModal('deliverModal')">Cancel</button>
+    </div>
+</div>
+
+<div id="handlerPhoneModal" class="modal" style="z-index: 999999; background: rgba(0,0,0,0.8);">
+    <div class="modal-content">
+        <div class="brand-icon" style="margin: 0 auto 20px; background: var(--primary); color: white;"><i class="fas fa-phone"></i></div>
+        <h3>Contact Number</h3>
+        <p style="margin-bottom: 20px; color: var(--text-muted);">Required for commuter communication.</p>
+        <input type="tel" id="handlerPhoneInput" class="form-control" placeholder="e.g. 082 123 4567" style="text-align: center; font-weight: bold;">
+        <button class="btn-primary" onclick="saveHandlerPhone()">Save Number</button>
+    </div>
+</div>
+
+<div id="unverifiedOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999999; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center;">
+    <div class="brand-icon" style="width: 80px; height: 80px; font-size: 2.5rem; margin-bottom: 20px; background: #fff; box-shadow: var(--shadow-md); color: var(--accent);"><i class="fas fa-lock"></i></div>
+    <h2 style="font-weight: 800; font-size: 1.8rem; margin-bottom: 10px;">Account Under Review</h2>
+    <p style="color:var(--text-muted); max-width:400px; margin-bottom:30px;">Your account is pending admin verification. Please wait for approval.</p>
+    <button class="btn-primary" style="width: auto; padding: 14px 40px;" onclick="auth.signOut().then(()=>window.location.href='index.html')">Logout</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script>
+    let availableMap = null; let availableMarkers = []; let bagInventory = { S: 0, M: 0, L: 0, XL: 0 }; window.currentAvailableBalance = 0;
+    const firebaseConfig = { apiKey: "AIzaSyCX_euO2EEPhfhuG5DTsSi5vCpZ9MFZczY", authDomain: "asiye-80386.firebaseapp.com", databaseURL: "https://asiye-80386-default-rtdb.firebaseio.com", projectId: "asiye-80386", storageBucket: "asiye-80386.firebasestorage.app" };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
+    let currentUser = null, currentLocation = null, locationWatch = null, availableDeliveries = [], myDeliveries = [], selectedDelivery = null, deliveryMap = null, isOnline = true, selectedPackageQuantity = 10, selectedBagSize = 'S', selectedAddress = null, selectedIdFront, selectedIdBack, selectedProof;
+    const wholesalePrices = { S: 35, M: 45, L: 60, XL: 120 };
+    const mapToken = '__MAPBOX_PUBLIC_TOKEN__"Online mode activated");
+        } else {
+            toggle.classList.remove('active'); document.getElementById('statusText').innerText='⚪ Offline'; if(locationWatch) navigator.geolocation.clearWatch(locationWatch); db.ref(`handlers/${currentUser.uid}`).update({ isOnline: false }); showToast("Offline mode");
+        }
+    }
+
+    async function initAvailableMap() {
+        if (!availableMap) {
+            mapboxgl.accessToken = mapToken;
+            availableMap = new mapboxgl.Map({
+                container: 'availableMapContainer',
+                style: 'mapbox://styles/mapbox/light-v11', // Matches modern design
+                center: currentLocation ? [currentLocation.lng, currentLocation.lat] : [28.0473, -26.2041],
+                zoom: 11
+            });
+            availableMap.addControl(new mapboxgl.NavigationControl());
+        } else {
+            availableMap.resize();
+        }
+    }
+
+    async function refreshAvailableDeliveries(){
+        if(!currentLocation){ document.getElementById('availableDeliveriesContainer').innerHTML='<div style="padding:40px;text-align:center;">📍 Waiting for GPS...</div>'; return; }
+        await loadBagOrders();
+
+        const snap = await db.ref('delivery_requests').orderByChild('status').equalTo('pending_assignment').once('value');
+        const arr = [];
+        snap.forEach(c => {
+            const d = c.val();
+            if(d.pickupLat && d.pickupLng){
+                const dist = distance(currentLocation.lat, currentLocation.lng, d.pickupLat, d.pickupLng);
+                if(dist <= 20) arr.push({id: c.key, ...d, distance: dist});
+            }
+        });
+        arr.sort((a,b) => a.distance - b.distance);
+        availableDeliveries = arr;
+
+        const container = document.getElementById('availableDeliveriesContainer');
+        if(!arr.length){
+            container.innerHTML='<div class="modern-card" style="text-align:center; padding:40px;"><div class="brand-icon" style="margin:0 auto 15px; background:none; font-size:3rem;"><i class="fas fa-check-circle" style="color:var(--success);"></i></div><h3 style="font-weight:700;">Radar Clear</h3><p style="color:var(--text-muted);">No new shipments in your area.</p></div>';
+        } else {
+            container.innerHTML = arr.map(d => {
+                const bagPayout = d.bagFee || d.bagPrice || 0;
+                const delPayout = (d.deliveryFee || d.baseDeliveryFee || (d.deliveryFee ? 0 : 35)) * 0.85;
+                d.handlerEarn = bagPayout > 0 ? (bagPayout + delPayout) : (d.deliveryFee ? d.deliveryFee * 0.85 : 35);
+
+                const reqSize = d.parcelSize || 'S';
+                const hasBag = bagInventory[reqSize] > 0;
+                const bagWarning = !hasBag ? `<div style="color:var(--danger); font-size:0.8rem; font-weight:700; margin-top:10px;"><i class="fas fa-exclamation-triangle"></i> Requires ${reqSize} Bag</div>` : '';
+                const acceptBtnState = !hasBag ? 'disabled' : '';
+
+                return `
+                <div class="modern-card">
+                    <div class="card-top-row">
+                        <div style="display:flex; align-items:center;">
+                            <div class="brand-icon"><i class="fas fa-box"></i></div>
+                            <div class="card-title-group">
+                                <span class="d-id">#${d.id.slice(-8)}</span>
+                                <span class="d-sub">${d.parcelWeight||1}kg (${reqSize}) • ${d.distance.toFixed(1)}km</span>
+                            </div>
+                        </div>
+                        <div class="status-pill">R${d.handlerEarn.toFixed(2)}</div>
+                    </div>
+
+                    <div class="timeline-visual">
+                        <div class="t-dot active"></div>
+                        <div class="t-dot"></div>
+                    </div>
+
+                    <div class="card-locations">
+                        <div style="flex:1; padding-right:10px;"><small>Pickup</small><br>${escapeHtml(d.pickupAddress?.split(',')[0])}</div>
+                        <div style="flex:1; text-align:right; padding-left:10px;"><small>Dropoff</small><br>${escapeHtml(d.dropoffAddress?.split(',')[0])}</div>
+                    </div>
+                    ${bagWarning}
+                    <div class="card-actions">
+                        <button class="btn-outline" style="flex:1;" onclick="viewDeliveryOnMap('${d.id}')">View Map</button>
+                        <button class="btn-primary" style="flex:1;" ${acceptBtnState} onclick="acceptDelivery('${d.id}')">Accept</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        await initAvailableMap();
+        availableMarkers.forEach(m => m.remove());
+        availableMarkers = [];
+        const bounds = new mapboxgl.LngLatBounds();
+
+        if (currentLocation) {
+            const userEl = document.createElement('div');
+            userEl.innerHTML = '<div style="width:20px;height:20px;background:#000;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,0.3);"></div>';
+            const um = new mapboxgl.Marker({element: userEl}).setLngLat([currentLocation.lng, currentLocation.lat]).addTo(availableMap);
+            availableMarkers.push(um);
+            bounds.extend([currentLocation.lng, currentLocation.lat]);
+        }
+
+        arr.forEach(d => {
+            if(d.pickupLng && d.pickupLat) {
+                const reqSize = d.parcelSize || 'S';
+                const hasBag = bagInventory[reqSize] > 0;
+                const el = document.createElement('div');
+                el.innerHTML = `<div style="background:${hasBag?'var(--accent)':'#ccc'}; color:#000; padding:4px 10px; border-radius:20px; font-weight:800; font-size:0.85rem; border:2px solid #fff; box-shadow:0 4px 10px rgba(0,0,0,0.2);">R${d.handlerEarn.toFixed(0)}</div>`;
+                el.style.cursor = 'pointer';
+                const m = new mapboxgl.Marker({element: el}).setLngLat([d.pickupLng, d.pickupLat]).addTo(availableMap);
+                el.onclick = () => { if(hasBag) acceptDelivery(d.id); else showToast(`Requires ${reqSize} bag`); };
+                availableMarkers.push(m);
+                bounds.extend([d.pickupLng, d.pickupLat]);
+            }
+        });
+
+        if (!bounds.isEmpty()) availableMap.fitBounds(bounds, { padding: 40, maxZoom: 14 });
+    }
+
+    async function acceptDelivery(id) {
+        const delivery = availableDeliveries.find(d => d.id === id);
+        if(!delivery) return;
+        const reqSize = delivery.parcelSize || 'S';
+        if (bagInventory[reqSize] <= 0) return showToast(`Blocked: You do not have ${reqSize} bags.`);
+
+        const hSnap = await db.ref(`handlers/${currentUser.uid}`).once('value');
+        const handlerData = hSnap.val();
+        await db.ref(`delivery_requests/${id}`).update({ status: 'assigned', handlerId: currentUser.uid, handlerName: handlerData.businessName || currentUser.displayName || 'Handler', handlerPhone: handlerData.phone || '', assignedAt: Date.now() });
+        showToast('Shipment accepted!');
+        await loadBagOrders();
+        refreshAvailableDeliveries();
+        loadMyDeliveries();
+    }
+
+    async function loadMyDeliveries(){
+        const snap = await db.ref('delivery_requests').orderByChild('handlerId').equalTo(currentUser?.uid).once('value');
+        myDeliveries = [];
+        snap.forEach(c=>{ const d=c.val(); if(d.status !== 'delivered' && d.status !== 'cancelled_by_admin') myDeliveries.push({id:c.key,...d}); });
+
+        const container = document.getElementById('myDeliveriesContainer');
+        if(!myDeliveries.length){
+            container.innerHTML='<div class="modern-card" style="text-align:center; padding:40px;"><p style="color:var(--text-muted);">No active shipments</p></div>';
+        } else {
+            container.innerHTML = myDeliveries.map(d=> {
+                const handlerEarn = (d.bagFee||d.bagPrice||0) + ((d.deliveryFee||d.baseDeliveryFee||0)*0.85) || (d.totalPrice?d.totalPrice*0.9:35);
+                const isAssigned = d.status==='assigned';
+
+                return `
+                <div class="modern-card">
+                    <div class="card-top-row">
+                        <div style="display:flex; align-items:center;">
+                            <div class="brand-icon"><i class="fas fa-truck-fast"></i></div>
+                            <div class="card-title-group">
+                                <span class="d-id">#${d.id.slice(-8)}</span>
+                                <span class="d-sub">${d.status.replace(/_/g, ' ').toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <div class="status-pill green">R${handlerEarn.toFixed(2)}</div>
+                    </div>
+                    <div class="card-locations" style="margin-bottom: 20px;">
+                        <div><small>From</small><br>${escapeHtml(d.pickupAddress?.split(',')[0])}</div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        ${isAssigned ? `<button class="btn-primary" style="flex:2;" onclick="showCollectModal('${d.id}')">Collect</button>` : `<button class="btn-primary" style="flex:2;" onclick="showDeliverModal('${d.id}')">Assign Taxi</button>`}
+                        <button class="btn-outline" style="flex:1; padding: 0;" onclick="trackDeliveryOnMap('${d.id}')"><i class="fas fa-location-arrow"></i></button>
+                        ${isAssigned ? `<button class="btn-outline" style="flex:1; padding: 0; color:var(--danger); border-color:var(--danger);" onclick="cancelDelivery('${d.id}')"><i class="fas fa-times"></i></button>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        loadDeliveryHistory(); loadEarnings();
+    }
+
+    async function loadDeliveryHistory(){
+        const snap = await db.ref('delivery_requests').orderByChild('handlerId').equalTo(currentUser?.uid).once('value');
+        const hist=[]; snap.forEach(c=>{ const d=c.val(); if(d.status==='delivered') hist.push({id:c.key,...d}); });
+        hist.sort((a,b)=>(b.deliveredAt||0)-(a.deliveredAt||0));
+        const tbody=document.getElementById('deliveryHistoryList');
+        if(!hist.length){ tbody.innerHTML='<tr><td colspan="4" style="text-align:center;">No history</td></tr>'; return; }
+        tbody.innerHTML=hist.slice(0,10).map(d=>`<tr><td>#${d.id.slice(-8)}</td><td><small>${escapeHtml(d.dropoffAddress?.split(',')[0])}</small></td><td style="font-weight:700;">R${((d.bagFee||0)+(d.deliveryFee||35)*0.85).toFixed(0)}</td><td><span style="color:var(--success);"><i class="fas fa-check-circle"></i></span></td></tr>`).join('');
+    }
+
+    async function loadEarnings(){
+        const snap = await db.ref(`handlers/${currentUser?.uid}`).once('value');
+        const h = snap.val() || {};
+        document.getElementById('totalDeliveries').innerHTML = h.totalDeliveries || 0;
+        const earnSnap = await db.ref(`handlers/${currentUser.uid}/earnings`).once('value');
+        let week = 0, today = 0, totalWithdrawn = 0, startDay = new Date().setHours(0,0,0,0); const list = [];
+
+        earnSnap.forEach(c => {
+            const val = c.val();
+            if (val.type === 'withdrawal') { totalWithdrawn += val.amount; list.push({id: c.key, ...val}); }
+            else { if(val.timestamp > Date.now() - 7*86400000) week += val.amount; if(val.timestamp > startDay) today += val.amount; list.push({id: c.key, ...val}); }
+        });
+
+        window.currentAvailableBalance = (h.totalEarned || 0) - totalWithdrawn;
+        document.getElementById('totalEarnings').innerHTML = `R${window.currentAvailableBalance.toFixed(2)}`;
+        document.getElementById('weeklyEarnings').innerHTML = `R${week.toFixed(2)}`;
+        document.getElementById('todayEarnings').innerHTML = `R${today.toFixed(2)}`;
+
+        const tbody = document.getElementById('earningsHistoryList');
+        if(!list.length) tbody.innerHTML='<tr><td colspan="3">No transactions</td></tr>';
+        else tbody.innerHTML = list.sort((a,b) => b.timestamp - a.timestamp).slice(0,15).map(e => `<tr><td><small>${new Date(e.timestamp).toLocaleDateString()}</small></td><td>${e.type === 'withdrawal' ? 'Payout' : `#${e.orderId?.slice(-8)}`}</td><td style="color:${e.type === 'withdrawal' ? 'var(--danger)' : 'var(--success)'}; font-weight:700;">${e.type === 'withdrawal' ? '-' : '+'}R${e.amount.toFixed(0)}</td></tr>`).join('');
+    }
+
+    async function requestPayout(){
+        if (window.currentAvailableBalance <= 0) return showToast("No balance available.");
+        const amount = window.currentAvailableBalance;
+        if(!confirm(`Request payout of R${amount.toFixed(2)}?`)) return;
+        await db.ref(`payout_requests/${currentUser.uid}`).push({ amount, requestedAt: Date.now(), status: 'pending', userType: 'handler' });
+        await db.ref(`handlers/${currentUser.uid}/earnings`).push({ amount, timestamp: Date.now(), type: 'withdrawal', status: 'pending' });
+        showToast('Payout requested!'); loadEarnings();
+    }
+
+    async function trackDeliveryOnMap(id){
+        const d = myDeliveries.find(x=>x.id===id); if(!d) return;
+
+        document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+        document.querySelectorAll('.view-section').forEach(v=>v.classList.remove('active'));
+        document.getElementById('map-view').classList.add('active');
+        document.querySelector('.nav-item[data-page="map"]').classList.add('active');
+
+        await initMap();
+        if(window.pickupMarker) window.pickupMarker.remove(); if(window.dropoffMarker) window.dropoffMarker.remove();
+        if(d.pickupLat && d.pickupLng) window.pickupMarker = new mapboxgl.Marker({color:'#000'}).setLngLat([d.pickupLng,d.pickupLat]).addTo(deliveryMap);
+        if(d.dropoffLat && d.dropoffLng) window.dropoffMarker = new mapboxgl.Marker({color:'#FF9500'}).setLngLat([d.dropoffLng,d.dropoffLat]).addTo(deliveryMap);
+        const bounds=new mapboxgl.LngLatBounds();
+        if(d.pickupLng && d.pickupLat) bounds.extend([d.pickupLng,d.pickupLat]); if(d.dropoffLng && d.dropoffLat) bounds.extend([d.dropoffLng,d.dropoffLat]);
+        deliveryMap.fitBounds(bounds,{padding:40});
+
+        document.getElementById('mapDeliveryInfo').style.display='block';
+        document.getElementById('mapDeliveryTitle').innerHTML=`#${d.id.slice(-8)}`;
+        document.getElementById('mapDeliveryStatus').innerHTML=`${d.status.toUpperCase()}`;
+        const nav=document.getElementById('navigateToPickupBtn'), col=document.getElementById('markCollectedBtn'), del=document.getElementById('markDeliveredBtn');
+        nav.style.display=d.status==='assigned'?'block':'none'; col.style.display=d.status==='assigned'?'block':'none'; del.style.display=d.status==='collected'?'block':'none';
+        nav.onclick=()=>window.open(`https://www.google.com/maps/dir/${currentLocation?.lat},${currentLocation?.lng}/${d.pickupLat},${d.pickupLng}`);
+        col.onclick=()=>showCollectModal(d.id); del.onclick=()=>showDeliverModal(d.id);
+    }
+
+    async function initMap(){
+        if(deliveryMap){ deliveryMap.resize(); return; }
+        mapboxgl.accessToken=mapToken;
+        deliveryMap = new mapboxgl.Map({ container:'deliveryMap', style:'mapbox://styles/mapbox/light-v11', center:[28.0473,-26.2041], zoom:12 });
+    }
+
+    function viewDeliveryOnMap(id){ const d=availableDeliveries.find(x=>x.id===id); if(d) trackDeliveryOnMap(d.id); }
+
+    function showCollectModal(id){ const d=myDeliveries.find(x=>x.id===id); if(d){ selectedDelivery=d; document.getElementById('collectOrderId').innerText=d.id.slice(-8); document.getElementById('collectPickupAddress').innerText=d.pickupAddress||'Pickup'; document.getElementById('collectModal').style.display='flex'; } }
+    async function confirmCollection(){ if(!selectedDelivery) return; await db.ref(`delivery_requests/${selectedDelivery.id}`).update({ status:'collected', collectedAt:Date.now() }); closeModal('collectModal'); showToast('Parcel collected!'); loadMyDeliveries(); }
+
+    function showDeliverModal(id){ const d=myDeliveries.find(x=>x.id===id); if(d){ selectedDelivery=d; document.getElementById('deliverModal').style.display='flex'; searchNearbyTaxis(d); } }
+    async function searchNearbyTaxis(delivery){
+        const container=document.getElementById('nearbyTaxisList'); container.innerHTML='<div style="text-align:center; padding:20px;">Searching taxis...</div>';
+        const snap=await db.ref('taxis').orderByChild('isOnline').equalTo(true).once('value'); const taxis=[];
+        snap.forEach(c=>{ const t=c.val(); if(t.latitude && t.longitude && currentLocation && distance(currentLocation.lat,currentLocation.lng,t.latitude,t.longitude)<10) taxis.push({id:c.key,...t}); });
+        if(!taxis.length){ container.innerHTML='<div style="text-align:center; padding:20px;">No taxis nearby</div>'; return; }
+        container.innerHTML=taxis.map(t=>`<div class="modern-card" style="margin-bottom:10px; padding:15px; display:flex; justify-content:space-between; align-items:center;"><div><strong>${escapeHtml(t.name||'Taxi')}</strong><br><small>${t.taxiRegistrationNumber||'N/A'}</small></div><button class="btn-primary" style="width:auto; padding:8px 16px;" onclick="assignToTaxi('${delivery.id}','${t.id}')">Assign</button></div>`).join('');
+    }
+    async function assignToTaxi(deliveryId, taxiId){ const taxiSnap=await db.ref(`taxis/${taxiId}`).once('value'); const taxi=taxiSnap.val(); const code=Math.floor(1000+Math.random()*9000); await db.ref(`delivery_requests/${deliveryId}`).update({ status:'taxi_assigned', assignedTaxiId:taxiId, taxiReg:taxi?.taxiRegistrationNumber||'N/A', taxiCode:code }); await db.ref(`notifications/taxis/${taxiId}`).push({ type:'new_delivery_assignment', deliveryId, message:`Parcel assigned, code: ${code}`, timestamp:Date.now() }); closeModal('deliverModal'); showToast(`Assigned! Code: ${code}`); loadMyDeliveries(); }
+    async function cancelDelivery(id){ if(!confirm('Cancel delivery?')) return; await db.ref(`delivery_requests/${id}`).update({ status:'pending_assignment', handlerId:null, handlerName:null }); showToast('Cancelled'); loadMyDeliveries(); refreshAvailableDeliveries(); }
+
+    function selectPackage(q){ selectedPackageQuantity=q; document.getElementById('customQuantity').value=q; updateCustomPrice(); }
+    function updateCustomPrice(){ let q = parseInt(document.getElementById('customQuantity').value) || 10; q = Math.min(100, Math.max(10, q)); selectedPackageQuantity = q; document.getElementById('customPrice').innerHTML = `R${(q * wholesalePrices[selectedBagSize]).toFixed(2)}`; }
+    function selectBagSize(size){ selectedBagSize = size; document.querySelectorAll('#packageOptions .package-option').forEach(o=>o.classList.remove('selected')); document.querySelector(`#packageOptions .package-option[data-size="${size}"]`).classList.add('selected'); updateCustomPrice(); }
+
+    async function placeBagOrder(){
+        const addr=document.getElementById('deliveryAddress').value; if(!addr) return showToast('Enter delivery address');
+        const total = selectedPackageQuantity * wholesalePrices[selectedBagSize];
+        try {
+            const orderRef = await db.ref(`handlers/${currentUser.uid}/bag_orders`).push({ quantity: selectedPackageQuantity, size: selectedBagSize, totalAmount: total, deliveryAddress: addr, status: 'pending_payment', createdAt: Date.now() });
+            const form=document.createElement('form'); form.method='POST'; form.action='https://www.payfast.co.za/eng/process'; form.style.display='none';
+            form.innerHTML=`<input name="merchant_id" value="15794279"><input name="merchant_key" value="evemwqtov8t9d"><input name="amount" value="${total.toFixed(2)}"><input name="item_name" value="${selectedPackageQuantity} ${selectedBagSize} Courier Bags"><input name="m_payment_id" value="bag_order_${orderRef.key}"><input name="email_address" value="${currentUser.email}">`;
+            document.body.appendChild(form); form.submit();
+        } catch(e) { showToast('Error'); }
+    }
+
+    async function loadBagOrders(){
+        try {
+            const bagSnap = await db.ref(`handlers/${currentUser.uid}/bag_orders`).once('value'); const orders = []; let bought = { S: 0, M: 0, L: 0, XL: 0 };
+            bagSnap.forEach(c => { const o = {id: c.key, ...c.val()}; orders.push(o); if (o.status === 'delivered') bought[o.size || 'S'] += (o.quantity || 0); });
+            const delSnap = await db.ref('delivery_requests').orderByChild('handlerId').equalTo(currentUser.uid).once('value'); let used = { S: 0, M: 0, L: 0, XL: 0 };
+            delSnap.forEach(c => { const d = c.val(); if (d.status !== 'cancelled_by_admin' && d.status !== 'cancelled_by_commuter' && d.status !== 'pending_assignment') used[d.parcelSize || 'S'] += 1; });
+            bagInventory = { S: Math.max(0, bought.S - used.S), M: Math.max(0, bought.M - used.M), L: Math.max(0, bought.L - used.L), XL: Math.max(0, bought.XL - used.XL) };
+
+            orders.sort((a,b) => b.createdAt - a.createdAt);
+            const tbody = document.getElementById('orderHistoryList');
+            if(!orders.length) tbody.innerHTML='<tr><td colspan="4">No orders</td></tr>';
+            else tbody.innerHTML = orders.slice(0,10).map(o => `<tr><td>#${o.id.slice(-8)}</td><td>${o.quantity} (${o.size||'S'})</td><td style="font-weight:700;">R${o.totalAmount.toFixed(0)}</td><td><span class="status-pill">${o.status||'Pending'}</span></td></tr>`).join('');
+
+            document.getElementById('bagsAvailable').innerHTML = `<span style="font-size:1rem;">S:${bagInventory.S} | M:${bagInventory.M} | L:${bagInventory.L} | XL:${bagInventory.XL}</span>`;
+            document.getElementById('totalOrders').innerHTML = orders.length;
+        } catch(e) {}
+    }
+
+    async function saveHandlerAddress(){ if(!selectedAddress) return showToast('Select address'); const btn=document.getElementById('saveAddressBtn'); btn.disabled=true; btn.innerHTML='Checking...'; const snap=await db.ref('handlers').once('value'); let taken=false; snap.forEach(c=>{ const h=c.val(); if(h.latitude && h.longitude && h.verificationStatus==='verified' && c.key!==currentUser.uid && distance(selectedAddress.lat,selectedAddress.lng,h.latitude,h.longitude)<0.5) taken=true; }); if(taken){ showToast('Area taken'); btn.disabled=false; btn.innerHTML='Save Address'; return; } await db.ref(`handlers/${currentUser.uid}`).update({ businessAddress:selectedAddress.address, latitude:selectedAddress.lat, longitude:selectedAddress.lng }); showToast('Saved'); loadHandlerProfile(); btn.disabled=false; btn.innerHTML='Save Address'; }
+    function initAddressSearch(){ if(!window.MapboxGeocoder){ setTimeout(initAddressSearch,300); return; } mapboxgl.accessToken=mapToken; const geocoder=new MapboxGeocoder({ accessToken:mapToken, types:'address,place', placeholder:'Enter address...', countries:'za' }); const container=document.getElementById('addressSearchContainer'); if(container){ container.innerHTML=''; container.appendChild(geocoder.onAdd(null)); geocoder.on('result',async(e)=>{ const [lng,lat]=e.result.center; selectedAddress={ address:e.result.place_name, lat, lng }; document.getElementById('selectedAddressDisplay').style.display='block'; document.getElementById('selectedAddressText').innerHTML=selectedAddress.address; const snap=await db.ref('handlers').once('value'); let conflict=false; snap.forEach(c=>{ const h=c.val(); if(h.latitude && h.longitude && h.verificationStatus==='verified' && c.key!==currentUser.uid && distance(lat,lng,h.latitude,h.longitude)<0.5) conflict=true; }); document.getElementById('areaAvailabilityMsg').innerHTML=conflict ? '<span style="color:var(--danger);">⚠️ Area occupied</span>' : '<span style="color:var(--success);">✅ Available</span>'; }); } }
+
+    async function loadHandlerProfile(){
+        const snap=await db.ref(`handlers/${currentUser.uid}`).once('value'); const h=snap.val();
+        if(h){
+            const name = h.businessName||currentUser.displayName||currentUser.email?.split('@')[0];
+            document.getElementById('userNameDisplay').innerText = name;
+            document.getElementById('userNameDisplayTop').innerText = name;
+
+            const status=h.verificationStatus||'pending';
+            const badge=document.getElementById('verificationStatusBadge');
+            badge.innerText=status.toUpperCase();
+            if(status==='verified') badge.classList.add('green');
+
+            if(h.businessAddress) {
+                const shortAddr = h.businessAddress.split(',')[0];
+                document.getElementById('areaDisplayTop').innerHTML=`<i class="fas fa-location-dot" style="color: var(--accent);"></i> ${shortAddr}`;
+            }
+            if(h.profilePicUrl){
+                document.getElementById('userProfileImg').src=h.profilePicUrl;
+                document.getElementById('userProfileImgTop').src=h.profilePicUrl;
+            }
+        }
+    }
+
+    function handleIdFrontSelect(e){ selectedIdFront=e.target.files[0]; document.getElementById('idFrontName').innerText=selectedIdFront?.name||''; }
+    function handleIdBackSelect(e){ selectedIdBack=e.target.files[0]; document.getElementById('idBackName').innerText=selectedIdBack?.name||''; }
+    function handleProofAddressSelect(e){ selectedProof=e.target.files[0]; document.getElementById('proofAddressName').innerText=selectedProof?.name||''; }
+    async function submitVerification(){ if(!selectedIdFront||!selectedIdBack||!selectedProof) return showToast('Upload all docs'); const btn=document.getElementById('submitVerificationBtn'); btn.disabled=true; btn.innerHTML='Uploading...'; try{ const ts=Date.now(); const upload=(file,path)=>new Promise((res,rej)=>{ const ref=storage.ref(path); ref.put(file).on('state_changed',null,rej,()=>ref.getDownloadURL().then(res)); }); const idFrontUrl=await upload(selectedIdFront,`verification/${currentUser.uid}/id_front_${ts}.jpg`); const idBackUrl=await upload(selectedIdBack,`verification/${currentUser.uid}/id_back_${ts}.jpg`); const proofUrl=await upload(selectedProof,`verification/${currentUser.uid}/proof_${ts}.jpg`); await db.ref(`verificationQueue/${currentUser.uid}`).set({ handlerId:currentUser.uid, handlerName:currentUser.displayName||currentUser.email, idFrontUrl, idBackUrl, proofAddressUrl:proofUrl, submittedAt:Date.now(), status:'pending_review' }); await db.ref(`handlers/${currentUser.uid}`).update({ verificationStatus:'pending_review' }); showToast('Submitted'); loadHandlerProfile(); }catch(e){ showToast('Upload failed'); }finally{ btn.disabled=false; btn.innerHTML='Submit Documents'; } }
+
+    function setupEventListeners() {
+        document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => {
+            const p = i.dataset.page;
+            if(p === 'logout'){ if(locationWatch) navigator.geolocation.clearWatch(locationWatch); db.ref(`handlers/${currentUser.uid}`).update({isOnline:false}); auth.signOut().then(() => window.location.href='index.html'); return; }
+
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); i.classList.add('active');
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active')); document.getElementById(`${p}-view`).classList.add('active');
+
+            if(p === 'available') { refreshAvailableDeliveries(); if(availableMap) setTimeout(() => availableMap.resize(), 100); }
+            if(p === 'my-deliveries') loadMyDeliveries();
+            if(p === 'orders') loadBagOrders();
+            if(p === 'earnings') loadEarnings();
+            if(p === 'profile') initAddressSearch();
+            if(p === 'map' && deliveryMap) setTimeout(() => deliveryMap.resize(), 100);
+        }));
+    }
+
+    document.getElementById('profilePicUpload').addEventListener('change',async(e)=>{ if(e.target.files.length){ const file=e.target.files[0]; const reader=new FileReader(); reader.onload=async(ev)=>{ document.getElementById('userProfileImg').src=ev.target.result; document.getElementById('userProfileImgTop').src=ev.target.result; await db.ref(`handlers/${currentUser.uid}`).update({ profilePicUrl:ev.target.result }); showToast('Updated'); }; reader.readAsDataURL(file); } });
+
+    auth.onAuthStateChanged(async(user) => {
+        if(user) {
+            currentUser = user;
+            const snap = await db.ref(`handlers/${user.uid}`).once('value'); let h = snap.val();
+            if(!h) { auth.signOut(); window.location.href = 'index.html'; return; }
+            if(h.verificationStatus !== 'verified') { document.getElementById('unverifiedOverlay').style.display = 'flex'; return; }
+            if (!h.phone || h.phone.trim() === '') document.getElementById('handlerPhoneModal').style.display = 'flex';
+
+            loadHandlerProfile(); startTracking(); loadMyDeliveries(); loadBagOrders(); setupEventListeners();
+            db.ref('delivery_requests').orderByChild('status').equalTo('pending_assignment').on('child_added', () => { if(isOnline && document.getElementById('available-view').classList.contains('active')) refreshAvailableDeliveries(); });
+        } else { window.location.href='index.html'; }
+    });
+
+    window.saveHandlerPhone = async function() { const phone = document.getElementById('handlerPhoneInput').value.trim(); if (phone.length < 10) return showToast('Valid phone required'); await db.ref(`handlers/${currentUser.uid}`).update({ phone: phone }); document.getElementById('handlerPhoneModal').style.display = 'none'; showToast('Saved!'); loadHandlerProfile(); };
+
+    window.acceptDelivery=acceptDelivery; window.refreshAvailableDeliveries=refreshAvailableDeliveries; window.viewDeliveryOnMap=viewDeliveryOnMap; window.trackDeliveryOnMap=trackDeliveryOnMap; window.showCollectModal=showCollectModal; window.showDeliverModal=showDeliverModal; window.confirmCollection=confirmCollection; window.assignToTaxi=assignToTaxi; window.cancelDelivery=cancelDelivery; window.toggleOnlineStatus=toggleOnlineStatus; window.requestPayout=requestPayout; window.closeModal=closeModal; window.selectPackage=selectPackage; window.updateCustomPrice=updateCustomPrice; window.placeBagOrder=placeBagOrder; window.saveHandlerAddress=saveHandlerAddress; window.submitVerification=submitVerification; window.handleIdFrontSelect=handleIdFrontSelect; window.handleIdBackSelect=handleIdBackSelect; window.handleProofAddressSelect=handleProofAddressSelect;
+</script>
+</body>
+</html>
