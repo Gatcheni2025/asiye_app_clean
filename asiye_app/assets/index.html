@@ -9352,7 +9352,55 @@ if (!firebase.apps.length) {
           const database = firebase.database();
           const auth = firebase.auth();
           const storage = firebase.storage();
-          mapboxgl.accessToken = '__MAPBOX_PUBLIC_TOKEN__"Current user data:", userData);
+          mapboxgl.accessToken = 'pk.eyJ1IjoiZ29zb3V0aGFmcmljYSIsImEiOiJjbW80OG16b2kxNnphMnFyMGRjcnZzMG15In0.uq4JASBTHH4Z2TZoMoj5jQ';
+          // Global variables
+          // Global variables
+          var map, geocoder, pickupGeocoder, parcelGeocoder, userId, commuterData, userMarker;
+
+          var selectedAdAddress = { text: '', coordinates: null };
+          var carouselslider = null; // Variable to hold the carousel instance
+
+          var passengerMarkers = {};
+var currentActivePopupRequestId = null;
+var requestStatusListener = null;
+
+          var commuterLat, commuterLng;
+          var userDropOffDestination = '';
+
+          var activeRequestRef = null;
+          var confirmedTaxiMarker = null;
+          var selectedPickupMethod = null;
+          var currentRequestId = null;
+          var notificationListener = null;
+          var activeTripListener = null;
+  var isAdDataLoaded = false;
+          var chatMessagesListener = null;
+           var sessionInitialized = false;
+           // --- ADD THIS AT THE TOP OF YOUR SCRIPT ---
+      var storyScrollInterval = null;
+      var currentAdIdForShare = null; // Also fixes Issue #4
+
+
+          // ==========================================
+  // CRITICAL: DEFINE FUNCTIONS BEFORE THEY'RE USED
+  // ==========================================
+
+  // Global flag to prevent multiple simultaneous watches
+  window.isWatchingAd = false;
+
+function initializeUserEarnings() {
+    if (!userId) return;
+
+    const userRef = firebase.database().ref('commuters/' + userId);
+
+    userRef.once('value').then(snapshot => {
+        const userData = snapshot.val();
+        if (!userData) return;
+
+        const updates = {};
+        var needsUpdate = false;
+
+        console.log("Current user data:", userData);
 
         // 🚨 REMOVED WELCOME PROMO: Initializing values to 0 by default to prevent duplication
         if (userData.promoRemaining === undefined || userData.promoRemaining === null) {
@@ -20304,7 +20352,38 @@ function openModal(modalId) {
       openModal('genericMessagePopup');
 
       // Initialize map
-      mapboxgl.accessToken = '__MAPBOX_PUBLIC_TOKEN__"fas fa-taxi"></i> Your parcel is on the way!
+      mapboxgl.accessToken = 'pk.eyJ1IjoiZ29zb3V0aGFmcmljYSIsImEiOiJjbTM4ajZmdmowc2JnMmlxeHF5bzB1dnJlIn0.CV71_oh-Tnag84kUE4K0ZQ';
+      trackingMap = new mapboxgl.Map({
+          container: 'trackingMapContainer',
+          style: 'mapbox://styles/mapbox/streets-v12',
+          center: [delivery.pickupLng, delivery.pickupLat],
+          zoom: 13
+      });
+
+      // Add pickup and dropoff markers
+      new mapboxgl.Marker({ color: '#1E6F3F' })
+          .setLngLat([delivery.pickupLng, delivery.pickupLat])
+          .setPopup(new mapboxgl.Popup().setHTML('<strong>Pickup Location</strong>'))
+          .addTo(trackingMap);
+
+      new mapboxgl.Marker({ color: '#dc3545' })
+          .setLngLat([delivery.dropoffLng, delivery.dropoffLat])
+          .setPopup(new mapboxgl.Popup().setHTML('<strong>Dropoff Location</strong>'))
+          .addTo(trackingMap);
+
+      // Listen for taxi/handler location updates
+      if (delivery.assignedTaxiId) {
+          database.ref(`taxis/${delivery.assignedTaxiId}`).on('value', (snapshot) => {
+              const taxi = snapshot.val();
+              if (taxi && taxi.latitude && taxi.longitude && trackingMap) {
+                  if (trackingMarker) trackingMarker.remove();
+                  trackingMarker = new mapboxgl.Marker({ color: '#007BFF' })
+                      .setLngLat([taxi.longitude, taxi.latitude])
+                      .setPopup(new mapboxgl.Popup().setHTML('<strong>Your Parcel Location</strong>'))
+                      .addTo(trackingMap);
+
+                  document.getElementById('trackingStatus').innerHTML = `
+                      <i class="fas fa-taxi"></i> Your parcel is on the way!
                       <br>Last updated: ${new Date().toLocaleTimeString()}
                   `;
 
@@ -26594,7 +26673,7 @@ window.requestAsiyeGoRide = async function() {
         destination: finalDest,
         price: fare,
         appliedCredit: totalAppliedCredit,
-            finalAmount: Math.max(0, fare - totalAppliedCredit),
+        finalAmount: Math.max(0, fare - totalAppliedCredit),
         paymentMethod: window.selectedPaymentMethod || 'cash',
         requirePin: true,
         pickupPin: Math.floor(1000 + Math.random() * 9000).toString(),
@@ -26622,7 +26701,7 @@ window.requestAsiyeGoRide = async function() {
             commuterProfilePic: window.commuterData?.profile_picture_url || "",
             calculatedPrice: fare,
             paymentMethod: passengerData.paymentMethod,
-            appliedCredit: appliedCredit,
+            appliedCredit: totalAppliedCredit, // <--- FIXED HERE
             finalAmount: passengerData.finalAmount,
             tripDistance: window.calculatedTripDistance || 0,
             commuterLocation: { latitude: commuterLat, longitude: commuterLng },
@@ -26636,16 +26715,16 @@ window.requestAsiyeGoRide = async function() {
         };
 
        if (isPooling) {
-    requestData.expiresAt = Date.now() + (10 * 60000); // 10 minute timeout
-    requestData.minCapacity = 2; // Starts pool sequence if at least 2 passengers join
-    requestData.maxCapacity = 3; // Hard limit at 3 passengers
-    requestData.originalPerPersonPrice = fare;
-    requestData.poolCenterLat = commuterLat;
-    requestData.poolCenterLng = commuterLng;
-    requestData.passengers = {};
-    requestData.passengers[userId] = passengerData;
-}
- await requestNode.set(requestData);
+            requestData.expiresAt = Date.now() + (10 * 60000); // 10 minute timeout
+            requestData.minCapacity = 2; // Starts pool sequence if at least 2 passengers join
+            requestData.maxCapacity = 3; // Hard limit at 3 passengers
+            requestData.originalPerPersonPrice = fare;
+            requestData.poolCenterLat = commuterLat;
+            requestData.poolCenterLng = commuterLng;
+            requestData.passengers = {};
+            requestData.passengers[userId] = passengerData;
+        }
+        await requestNode.set(requestData);
 
         // ==============================================================
         // 🚨 CRITICAL FIX: BROADCAST "ASIYE GO" REQUEST TO NEARBY DRIVERS
@@ -26678,7 +26757,6 @@ window.requestAsiyeGoRide = async function() {
     }
 
     // Deduct credits and track request locally
-  // Deduct credits and track request locally
     const newCreditBalance = Math.max(0, availableCredit - totalAppliedCredit);
     
     await database.ref(`commuters/${userId}`).update({
@@ -26694,8 +26772,7 @@ window.requestAsiyeGoRide = async function() {
     }
 
     listenForRequestStatus(currentRequestId);
-};
-// =======================================================================
+};// =======================================================================
 // DYNAMIC COMMUTER POOLING UI & "RIDE NOW" MATH
 // =======================================================================
 
